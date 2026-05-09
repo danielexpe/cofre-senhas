@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+
+# Ambientes virtuais
+myenv/
+.venv/
+venv/
+env/
+ENV/
+
+# Cofres de senhas (NUNCA versionar!)
+*.vault
+*.key
+
+# Cache da aplicação
+.cofre_cache.json
+cache_cofres.json
+
+# IDE / Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Configs locais
+.env
+.env.local
+
+# Builds (PyInstaller / AppImage)
+build/
+dist/
+build_appimage/
+*.AppImage
+*.AppDir/
+*.spec.bak
+
+
