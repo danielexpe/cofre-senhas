@@ -94,7 +94,7 @@ sha256sum "$APP"
 
 ### Método 1: Executando o código-fonte
 
-\`\`\`bash
+```bash
 # 1. Clone o repositório
 git clone https://github.com/seu-usuario/cofre-senhas.git
 cd cofre-senhas
@@ -109,16 +109,16 @@ pip install -r requirements.txt
 
 # 4. Execute a aplicação
 python main.py
-\`\`\`
+```
 
 ### Método 2: AppImage (Linux)
 
 Baixe o AppImage da última release e execute:
 
-\`\`\`bash
+```bash
 chmod +x CofreDeSenhas-1.1-x86_64.AppImage
 ./CofreDeSenhas-1.1-x86_64.AppImage
-\`\`\`
+```
 
 Ou simplesmente **dois cliques** no arquivo. Sem instalação, sem dependências. ✨
 
@@ -148,10 +148,10 @@ Ou simplesmente **dois cliques** no arquivo. Sem instalação, sem dependências
 
 Na raiz do projeto, execute o instalador de atalho:
 
-\`\`\`bash
+```bash
 chmod +x instalar_atalho.sh
 ./instalar_atalho.sh
-\`\`\`
+```
 
 Isso cria:
 - 🖥️ Ícone na **área de trabalho**
@@ -163,32 +163,32 @@ Isso cria:
 
 ### AppImage (Linux)
 
-\`\`\`bash
+```bash
 chmod +x build_appimage.sh
 ./build_appimage.sh
-\`\`\`
+```
 
 ### .exe (Windows)
 
-\`\`\`powershell
+```powershell
 pip install pyinstaller
 pyinstaller --name CofreSenhas --onefile --windowed \`
             --icon=assets/icone.ico \`
             --add-data "assets;assets" \`
             --collect-all customtkinter \`
             main.py
-\`\`\`
+```
 
 ### .app (macOS)
 
-\`\`\`bash
+```bash
 pip install pyinstaller
 pyinstaller --name CofreSenhas --onefile --windowed \\
             --icon=assets/icone.icns \\
             --add-data "assets:assets" \\
             --collect-all customtkinter \\
             main.py
-\`\`\`
+```
 
 ---
 
@@ -252,7 +252,7 @@ Este projeto está sob a licença **MIT**. Veja o arquivo LICENSE para mais deta
 
 Desenvolvido por **Daniel** 🚀
 
-- 🌎 Blumenau, SC — Brasil
+- 🌎 Porto Alegre, RS — Brasil
 
 ---
 
@@ -268,7 +268,7 @@ Desenvolvido por **Daniel** 🚀
 
 **Se este projeto te ajudou, considere dar uma ⭐ no repositório!**
 
-Feito com ☕ e 🐍 em Blumenau, SC 🇧🇷
+Feito com ☕ e 🐍 em Porto Alegre, RS 🇧🇷
 
 </div>
 EOF
