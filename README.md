@@ -44,6 +44,45 @@ O **Cofre de Senhas** é uma aplicação desktop para armazenamento seguro de cr
 
 ---
 
+## Downloads
+
+- Página de Releases: https://github.com/danielexpe/cofre-senhas/releases
+- Última versão: https://github.com/danielexpe/cofre-senhas/releases/latest
+
+Artefatos disponíveis no Release:
+- AppImage (ex.: `CofreDeSenhas-1.1-x86_64.AppImage`)
+- `SHA256SUMS`
+- `SHA256SUMS.asc`
+- `DANIEL-PUBKEY.asc` (chave pública do autor)
+
+## Verifique a integridade e a assinatura
+
+Fingerprint GPG do autor: `D7E1 90A8 26A9 82E5 01B7 469F F7E9 56C8 37AB D08F`  
+(Chave: `D7E190A826A982E501B7469FF7E956C837ABD08F`)
+
+```bash
+# 0) Ajuste o nome do arquivo que você baixou
+APP="CofreDeSenhas-1.1-x86_64.AppImage"
+
+# (Opcional) Baixe direto os arquivos de verificação da última release
+# wget https://github.com/danielexpe/cofre-senhas/releases/latest/download/DANIEL-PUBKEY.asc
+# wget https://github.com/danielexpe/cofre-senhas/releases/latest/download/SHA256SUMS
+# wget https://github.com/danielexpe/cofre-senhas/releases/latest/download/SHA256SUMS.asc
+
+# 1) Importar a chave pública do Daniel
+gpg --import DANIEL-PUBKEY.asc
+
+# 2) Verificar a assinatura dos checksums
+gpg --verify SHA256SUMS.asc SHA256SUMS
+
+# 3) Conferir o hash do AppImage (deve bater com a linha correspondente em SHA256SUMS)
+sha256sum "$APP"
+
+# 4) (Opcional) Verificar a assinatura PGP embutida no AppImage
+./"$APP" --appimage-signature | head -n 20
+
+---
+
 ## 🚀 Instalação
 
 ### Pré-requisitos
