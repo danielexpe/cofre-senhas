@@ -60,7 +60,7 @@ Artefatos disponíveis no Release:
 Fingerprint GPG do autor: `D7E1 90A8 26A9 82E5 01B7 469F F7E9 56C8 37AB D08F`  
 (Chave: `D7E190A826A982E501B7469FF7E956C837ABD08F`)
 
-\`\`\`bash
+```bash
 # 0) Ajuste o nome do arquivo que você baixou
 APP="CofreDeSenhas-1.1-x86_64.AppImage"
 
@@ -80,7 +80,7 @@ sha256sum "$APP"
 
 # 4) (Opcional) Verificar a assinatura PGP embutida no AppImage
 ./"$APP" --appimage-signature | head -n 20
-\`\`\`
+```
 
 ---
 
