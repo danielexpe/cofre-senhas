@@ -51,11 +51,11 @@ class TelaPrincipal:
 
         # Lista (scrollable)
         self.lista_frame = ctk.CTkScrollableFrame(self.master, corner_radius=10)
-        self.lista_frame.pack(fill="both", expand=True, padx=15, pady=10)
+        self.lista_frame.pack(fill="both", expand=True, padx=2, pady=2)
 
         # Rodapé
         self.status = ctk.CTkLabel(self.master, text="", font=ctk.CTkFont(size=11), text_color="gray")
-        self.status.pack(side="bottom", pady=5)
+        self.status.pack(side="bottom", pady=2)
 
         self._renderizar_lista()
 
@@ -78,10 +78,10 @@ class TelaPrincipal:
 
     def _render_card(self, reg):
         card = ctk.CTkFrame(self.lista_frame, corner_radius=10)
-        card.pack(fill="x", pady=5, padx=5)
+        card.pack(fill="x", pady=2, padx=2)
 
         info = ctk.CTkFrame(card, fg_color="transparent")
-        info.pack(side="left", fill="both", expand=True, padx=15, pady=10)
+        info.pack(side="left", fill="both", expand=True, padx=2, pady=2)
 
         ctk.CTkLabel(info, text=f"🏷️  {reg['nome']}",
                      font=ctk.CTkFont(size=15, weight="bold")).pack(anchor="w")
@@ -92,24 +92,18 @@ class TelaPrincipal:
             ctk.CTkLabel(info, text=f"🔗  {reg['url']}",
                          font=ctk.CTkFont(size=11), text_color="#60a5fa").pack(anchor="w")
 
-        senha_visivel = self.senha_visivel.get(reg["id"], False)
-        senha_txt = reg["senha"] if senha_visivel else "•" * 10
-        ctk.CTkLabel(info, text=f"🔑  {senha_txt}",
-                     font=ctk.CTkFont(size=12, family="Courier")).pack(anchor="w", pady=2)
-
         # Botões de ação
         botoes = ctk.CTkFrame(card, fg_color="transparent")
-        botoes.pack(side="right", padx=10, pady=10)
+        botoes.pack(side="right", padx=2, pady=2)
 
-        olho = "🙈" if senha_visivel else "👁️"
-        ctk.CTkButton(botoes, text=olho, width=40,
-                      command=lambda r=reg: self._toggle_senha(r["id"])).pack(side="left", padx=2)
-        ctk.CTkButton(botoes, text="📋", width=40, fg_color="#16a085",
+        ctk.CTkButton(botoes, text="📋 Copiar", width=80, fg_color="#16a085",
                       command=lambda r=reg: self._copiar_senha(r)).pack(side="left", padx=2)
-        ctk.CTkButton(botoes, text="✏️", width=40, fg_color="#d68910",
+        ctk.CTkButton(botoes, text="✏️ Editar", width=80, fg_color="#d68910",
                       command=lambda r=reg: self._editar(r)).pack(side="left", padx=2)
-        ctk.CTkButton(botoes, text="🗑️", width=40, fg_color="#c0392b",
+        ctk.CTkButton(botoes, text="🗑️ Excluir", width=80, fg_color="#c0392b",
                       command=lambda r=reg: self._deletar(r)).pack(side="left", padx=2)
+        ctk.CTkFrame(info, height=2, fg_color="gray").pack(fill="x", pady=2)
+        
 
     def _toggle_senha(self, rid):
         self.senha_visivel[rid] = not self.senha_visivel.get(rid, False)
