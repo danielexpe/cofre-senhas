@@ -96,7 +96,7 @@ sha256sum "$APP"
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/cofre-senhas.git
+git clone https://github.com/danielexpe/cofre-senhas.git
 cd cofre-senhas
 
 # 2. Crie um ambiente virtual (recomendado)
@@ -188,6 +188,10 @@ pyinstaller --name CofreSenhas --onefile --windowed \\
             --add-data "assets:assets" \\
             --collect-all customtkinter \\
             main.py
+```
+OU
+```bash
+pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --add-data "assets;assets" --collect-all customtkinter main.py
 ```
 
 ---
