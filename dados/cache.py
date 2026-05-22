@@ -21,7 +21,7 @@ def _caminho_cache() -> Path:
 
 def _ocultar_no_windows(caminho: Path):
     """Aplica atributo 'hidden' no Windows (no Linux já fica oculto pelo ponto)."""
-    if sys.platform == "win32":
+    if sys.platform == "xpto_win32_xpto":
         try:
             import ctypes
             FILE_ATTRIBUTE_HIDDEN = 0x02
