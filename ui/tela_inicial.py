@@ -114,7 +114,6 @@ class TelaInicial:
         if self.lista_scroll is None:
             return
 
-        self.master.bind_all("<MouseWheel>", self._on_mousewheel_windows_mac)
         self.master.bind_all("<Button-4>", self._on_mousewheel_linux)
         self.master.bind_all("<Button-5>", self._on_mousewheel_linux)
 
@@ -122,15 +121,8 @@ class TelaInicial:
         if self.lista_scroll is None:
             return
 
-        self.master.unbind_all("<MouseWheel>")
         self.master.unbind_all("<Button-4>")
         self.master.unbind_all("<Button-5>")
-
-    def _on_mousewheel_windows_mac(self, event):
-        if self.lista_scroll is None:
-            return
-
-        self.lista_scroll._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def _on_mousewheel_linux(self, event):
         if self.lista_scroll is None:
