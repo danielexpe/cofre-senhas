@@ -1,6 +1,7 @@
 import os
 import customtkinter as ctk
 from tkinter import messagebox
+
 from seguranca.encriptacao import encriptar_cofre
 from dados.armazenamento import buscar_registros
 from ui.formulario_registro import FormularioRegistro
@@ -15,11 +16,12 @@ class TelaPrincipal:
         self.senha = senha
         self.registros = registros
         self.senha_visivel = {}
+        self.lista_frame = None
 
         # Registra/atualiza no cache de cofres recentes
         from dados.cache import adicionar_ou_atualizar
         adicionar_ou_atualizar(caminho, secret_id)
-        
+
         self._limpar()
         self._construir()
 
@@ -28,36 +30,88 @@ class TelaPrincipal:
             w.destroy()
 
     def _construir(self):
-        # Topo
         topo = ctk.CTkFrame(self.master, corner_radius=0, height=70)
         topo.pack(fill="x")
 
-        ctk.CTkLabel(topo, text=f"🔐 {os.path.basename(self.caminho)}",
-                     font=ctk.CTkFont(size=18, weight="bold")).pack(side="left", padx=20, pady=15)
+        ctk.CTkLabel(
+            topo,
+            text=f"🔐 {os.path.basename(self.caminho)}",
+            font=ctk.CTkFont(size=18, weight="bold")
+        ).pack(side="left", padx=20, pady=15)
 
-        ctk.CTkButton(topo, text="🚪 Sair", width=80, fg_color="#c0392b",
-                      hover_color="#922b21", command=self._sair).pack(side="right", padx=10)
-        ctk.CTkButton(topo, text="➕ Novo Registro", width=140,
-                      command=self._novo_registro).pack(side="right", padx=5)
+        ctk.CTkButton(
+            topo,
+            text="🚪 Sair",
+            width=80,
+            fg_color="#c0392b",
+            hover_color="#922b21",
+            command=self._sair
+        ).pack(side="right", padx=10)
 
-        # Busca
+        ctk.CTkButton(
+            topo,
+            text="➕ Novo Registro",
+            width=140,
+            command=self._novo_registro
+        ).pack(side="right", padx=5)
+
         busca_frame = ctk.CTkFrame(self.master, corner_radius=0)
         busca_frame.pack(fill="x", padx=15, pady=(10, 5))
 
         ctk.CTkLabel(busca_frame, text="🔍").pack(side="left", padx=(10, 5))
-        self.busca_entry = ctk.CTkEntry(busca_frame, placeholder_text="Buscar por nome, login ou URL...")
+
+        self.busca_entry = ctk.CTkEntry(
+            busca_frame,
+            placeholder_text="Buscar por nome, login ou URL..."
+        )
         self.busca_entry.pack(side="left", fill="x", expand=True, padx=5, pady=8)
         self.busca_entry.bind("<KeyRelease>", lambda e: self._renderizar_lista())
 
-        # Lista (scrollable)
         self.lista_frame = ctk.CTkScrollableFrame(self.master, corner_radius=10)
         self.lista_frame.pack(fill="both", expand=True, padx=2, pady=2)
 
-        # Rodapé
-        self.status = ctk.CTkLabel(self.master, text="", font=ctk.CTkFont(size=11), text_color="gray")
+        self.lista_frame.bind("<Enter>", self._ativar_scroll_lista)
+        self.lista_frame.bind("<Leave>", self._desativar_scroll_lista)
+
+        self.status = ctk.CTkLabel(
+            self.master,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color="gray"
+        )
         self.status.pack(side="bottom", pady=2)
 
         self._renderizar_lista()
+
+    def _ativar_scroll_lista(self, event=None):
+        if self.lista_frame is None:
+            return
+
+        self.master.bind_all("<MouseWheel>", self._on_mousewheel_windows_mac)
+        self.master.bind_all("<Button-4>", self._on_mousewheel_linux)
+        self.master.bind_all("<Button-5>", self._on_mousewheel_linux)
+
+    def _desativar_scroll_lista(self, event=None):
+        if self.lista_frame is None:
+            return
+
+        self.master.unbind_all("<MouseWheel>")
+        self.master.unbind_all("<Button-4>")
+        self.master.unbind_all("<Button-5>")
+
+    def _on_mousewheel_windows_mac(self, event):
+        if self.lista_frame is None:
+            return
+        self.lista_frame._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+    def _on_mousewheel_linux(self, event):
+        if self.lista_frame is None:
+            return
+
+        if event.num == 4:
+            self.lista_frame._parent_canvas.yview_scroll(-1, "units")
+        elif event.num == 5:
+            self.lista_frame._parent_canvas.yview_scroll(1, "units")
 
     def _renderizar_lista(self):
         for w in self.lista_frame.winfo_children():
@@ -67,43 +121,82 @@ class TelaPrincipal:
         filtrados = buscar_registros(self.registros, termo)
 
         if not filtrados:
-            ctk.CTkLabel(self.lista_frame,
-                         text="📭 Nenhum registro encontrado.\nClique em '➕ Novo Registro' para começar.",
-                         font=ctk.CTkFont(size=14), text_color="gray").pack(pady=60)
+            ctk.CTkLabel(
+                self.lista_frame,
+                text="📭 Nenhum registro encontrado.\nClique em '➕ Novo Registro' para começar.",
+                font=ctk.CTkFont(size=14),
+                text_color="gray"
+            ).pack(pady=60)
         else:
-            for reg in filtrados:
-                self._render_card(reg)
+            for i, reg in enumerate(filtrados):
+                self._render_card(reg, i)
 
-        self.status.configure(text=f"Total: {len(self.registros)} registro(s) | Exibindo: {len(filtrados)}")
+        self.status.configure(
+            text=f"Total: {len(self.registros)} registro(s) | Exibindo: {len(filtrados)}"
+        )
 
-    def _render_card(self, reg):
-        card = ctk.CTkFrame(self.lista_frame, corner_radius=10)
+    def _render_card(self, reg, indice):
+        cor_clara = "#2f2f2f"
+        cor_escura = "#262626"
+        cor_card = cor_clara if indice % 2 == 0 else cor_escura
+
+        card = ctk.CTkFrame(
+            self.lista_frame,
+            corner_radius=10,
+            fg_color=cor_card
+        )
         card.pack(fill="x", pady=2, padx=2)
 
         info = ctk.CTkFrame(card, fg_color="transparent")
-        info.pack(side="left", fill="both", expand=True, padx=2, pady=2)
+        info.pack(side="left", fill="both", expand=True, padx=10, pady=8)
 
-        ctk.CTkLabel(info, text=f"🏷️  {reg['nome']}",
-                     font=ctk.CTkFont(size=15, weight="bold")).pack(anchor="w")
-        ctk.CTkLabel(info, text=f"👤  {reg['login']}",
-                     font=ctk.CTkFont(size=12), text_color="#9ca3af").pack(anchor="w", pady=2)
+        ctk.CTkLabel(
+            info,
+            text=f"🏷️  {reg['nome']}",
+            font=ctk.CTkFont(size=15, weight="bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            info,
+            text=f"👤  {reg['login']}",
+            font=ctk.CTkFont(size=12),
+            text_color="#9ca3af"
+        ).pack(anchor="w", pady=2)
 
         if reg.get("url"):
-            ctk.CTkLabel(info, text=f"🔗  {reg['url']}",
-                         font=ctk.CTkFont(size=11), text_color="#60a5fa").pack(anchor="w")
+            ctk.CTkLabel(
+                info,
+                text=f"🔗  {reg['url']}",
+                font=ctk.CTkFont(size=11),
+                text_color="#60a5fa"
+            ).pack(anchor="w")
 
-        # Botões de ação
         botoes = ctk.CTkFrame(card, fg_color="transparent")
         botoes.pack(side="right", padx=2, pady=2)
 
-        ctk.CTkButton(botoes, text="📋 Copiar", width=80, fg_color="#16a085",
-                      command=lambda r=reg: self._copiar_senha(r)).pack(side="left", padx=2)
-        ctk.CTkButton(botoes, text="✏️ Editar", width=80, fg_color="#d68910",
-                      command=lambda r=reg: self._editar(r)).pack(side="left", padx=2)
-        ctk.CTkButton(botoes, text="🗑️ Excluir", width=80, fg_color="#c0392b",
-                      command=lambda r=reg: self._deletar(r)).pack(side="left", padx=2)
-        ctk.CTkFrame(info, height=2, fg_color="gray").pack(fill="x", pady=2)
-        
+        ctk.CTkButton(
+            botoes,
+            text="📋 Copiar",
+            width=80,
+            fg_color="#16a085",
+            command=lambda r=reg: self._copiar_senha(r)
+        ).pack(side="left", padx=2)
+
+        ctk.CTkButton(
+            botoes,
+            text="✏️ Editar",
+            width=80,
+            fg_color="#d68910",
+            command=lambda r=reg: self._editar(r)
+        ).pack(side="left", padx=2)
+
+        ctk.CTkButton(
+            botoes,
+            text="🗑️ Excluir",
+            width=80,
+            fg_color="#c0392b",
+            command=lambda r=reg: self._deletar(r)
+        ).pack(side="left", padx=2)
 
     def _toggle_senha(self, rid):
         self.senha_visivel[rid] = not self.senha_visivel.get(rid, False)
@@ -111,7 +204,9 @@ class TelaPrincipal:
 
     def _copiar_senha(self, reg):
         copiar_clipboard(self.master, reg["senha"])
-        self.status.configure(text=f"✓ Senha de '{reg['nome']}' copiada para área de transferência.")
+        self.status.configure(
+            text=f"✓ Senha de '{reg['nome']}' copiada para área de transferência."
+        )
 
     def _novo_registro(self):
         FormularioRegistro(self.master, self._adicionar_callback)
@@ -145,10 +240,8 @@ class TelaPrincipal:
             messagebox.showerror("Erro", f"Falha ao salvar cofre:\n{e}")
 
     def _sair(self):
-        # Limpa dados sensíveis da memória
         self.senha = None
         self.secret_id = None
         self.registros = None
         from ui.tela_inicial import TelaInicial
         TelaInicial(self.master)
-
