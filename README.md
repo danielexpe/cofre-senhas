@@ -44,7 +44,7 @@ O **Cofre de Senhas** é uma aplicação desktop para armazenamento seguro de cr
 
 ---
 
-## Downloads
+## Downloads dos Artefatos das Realeases
 
 - Página de Releases: https://github.com/danielexpe/cofre-senhas/releases
 - Última versão: https://github.com/danielexpe/cofre-senhas/releases/latest
@@ -82,9 +82,20 @@ sha256sum "$APP"
 ./"$APP" --appimage-signature | head -n 20
 ```
 
+## Rodar: AppImage (Linux)
+
+Baixe o AppImage da última release e execute:
+
+```bash
+chmod +x CofreDeSenhas-1.1-x86_64.AppImage
+./CofreDeSenhas-1.1-x86_64.AppImage
+```
+
+Ou simplesmente **dois cliques** no arquivo. Sem instalação, sem dependências. ✨
+
 ---
 
-## 🚀 Instalação
+## 🚀 Baixar código fonte da aplicação
 
 ### Pré-requisitos
 
@@ -102,7 +113,7 @@ cd cofre-senhas
 # 2. Crie um ambiente virtual (recomendado)
 python3 -m venv .venv
 source .venv/bin/activate   # Linux/macOS
-# .venv\Scripts\activate    # Windows
+.venv\Scripts\activate      # Windows
 
 # 3. Instale as dependências
 pip install -r requirements.txt
@@ -110,17 +121,6 @@ pip install -r requirements.txt
 # 4. Execute a aplicação
 python main.py
 ```
-
-### Método 2: AppImage (Linux)
-
-Baixe o AppImage da última release e execute:
-
-```bash
-chmod +x CofreDeSenhas-1.1-x86_64.AppImage
-./CofreDeSenhas-1.1-x86_64.AppImage
-```
-
-Ou simplesmente **dois cliques** no arquivo. Sem instalação, sem dependências. ✨
 
 ---
 
@@ -178,6 +178,10 @@ pyinstaller --name CofreSenhas --onefile --windowed \`
             --collect-all customtkinter \`
             main.py
 ```
+OU
+```bash
+pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --add-data "assets;assets" --collect-all customtkinter main.py
+```
 
 ### .app (macOS)
 
@@ -188,10 +192,6 @@ pyinstaller --name CofreSenhas --onefile --windowed \\
             --add-data "assets:assets" \\
             --collect-all customtkinter \\
             main.py
-```
-OU
-```bash
-pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --add-data "assets;assets" --collect-all customtkinter main.py
 ```
 
 ---
@@ -213,14 +213,10 @@ pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --ad
 - [x] Sistema de cache de cofres recentes
 - [x] Atalho desktop para Linux
 - [x] Empacotamento como AppImage
-- [ ] Build para Windows (.exe)
-- [ ] Build para macOS (.app)
-- [ ] Busca/filtro de senhas
-- [ ] Botão "copiar senha" com auto-limpeza do clipboard
+- [x] Build para Windows (.exe)
+- [x] Busca/filtro de senhas
 - [ ] Gerador de senhas fortes integrado
 - [ ] Exportar/importar cofre (backup)
-- [ ] Auto-bloqueio por inatividade
-- [ ] Suporte a 2FA/TOTP
 
 ---
 
