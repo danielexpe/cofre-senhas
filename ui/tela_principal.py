@@ -1,4 +1,5 @@
 import os
+import tkinter as tk
 import customtkinter as ctk
 from tkinter import messagebox
 
@@ -6,6 +7,11 @@ from seguranca.encriptacao import encriptar_cofre
 from dados.armazenamento import buscar_registros
 from ui.formulario_registro import FormularioRegistro
 from utils.helpers import copiar_clipboard
+
+
+DEBOUNCE_BUSCA_MS = 250
+COR_CARD_PAR = "#2f2f2f"
+COR_CARD_IMPAR = "#262626"
 
 
 class TelaPrincipal:
@@ -16,7 +22,17 @@ class TelaPrincipal:
         self.senha = senha
         self.registros = registros
         self.senha_visivel = {}
-        self.lista_frame = None
+
+        # Lista virtualizada: só os cards visíveis existem de fato.
+        self._container = None
+        self.canvas = None
+        self.scrollbar = None
+        self._vazio_label = None
+        self._pool = []
+        self._filtrados = []
+        self._row_h = None
+        self._largura = 0
+        self._render_job = None
 
         # Registra/atualiza no cache de cofres recentes
         from dados.cache import adicionar_ou_atualizar
@@ -65,13 +81,33 @@ class TelaPrincipal:
             placeholder_text="Buscar por nome, login ou URL..."
         )
         self.busca_entry.pack(side="left", fill="x", expand=True, padx=5, pady=8)
-        self.busca_entry.bind("<KeyRelease>", lambda e: self._renderizar_lista())
+        self.busca_entry.bind("<KeyRelease>", lambda e: self._renderizar_lista(debounce=True))
 
-        self.lista_frame = ctk.CTkScrollableFrame(self.master, corner_radius=10)
-        self.lista_frame.pack(fill="both", expand=True, padx=2, pady=2)
+        self._container = ctk.CTkFrame(self.master, corner_radius=10, fg_color="transparent")
+        self._container.pack(fill="both", expand=True, padx=2, pady=2)
 
-        self.lista_frame.bind("<Enter>", self._ativar_scroll_lista)
-        self.lista_frame.bind("<Leave>", self._desativar_scroll_lista)
+        fundo = self.master.cget("fg_color")
+        if isinstance(fundo, (tuple, list)):
+            fundo = fundo[1] if ctk.get_appearance_mode() == "Dark" else fundo[0]
+        self._fundo = fundo
+
+        self.canvas = tk.Canvas(self._container, highlightthickness=0, bd=0, bg=fundo)
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        self.scrollbar = ctk.CTkScrollbar(self._container, command=self.canvas.yview)
+        self.scrollbar.pack(side="right", fill="y")
+
+        self.canvas.configure(yscrollcommand=self._on_scroll)
+        self.canvas.bind("<Configure>", self._on_canvas_configure)
+        self._container.bind("<Enter>", self._ativar_scroll_lista)
+        self._container.bind("<Leave>", self._desativar_scroll_lista)
+
+        self._vazio_label = ctk.CTkLabel(
+            self.canvas,
+            text="📭 Nenhum registro encontrado.\nClique em '➕ Novo Registro' para começar.",
+            font=ctk.CTkFont(size=14),
+            text_color="gray"
+        )
 
         self.status = ctk.CTkLabel(
             self.master,
@@ -84,112 +120,178 @@ class TelaPrincipal:
         self._renderizar_lista()
 
     def _ativar_scroll_lista(self, event=None):
-        if self.lista_frame is None:
+        if self.canvas is None:
             return
 
         self.master.bind_all("<Button-4>", self._on_mousewheel_linux)
         self.master.bind_all("<Button-5>", self._on_mousewheel_linux)
 
     def _desativar_scroll_lista(self, event=None):
-        if self.lista_frame is None:
+        if self.canvas is None:
             return
 
         self.master.unbind_all("<Button-4>")
         self.master.unbind_all("<Button-5>")
 
     def _on_mousewheel_linux(self, event):
-        if self.lista_frame is None:
+        if self.canvas is None:
             return
 
         if event.num == 4:
-            self.lista_frame._parent_canvas.yview_scroll(-1, "units")
+            self.canvas.yview_scroll(-1, "units")
         elif event.num == 5:
-            self.lista_frame._parent_canvas.yview_scroll(1, "units")
+            self.canvas.yview_scroll(1, "units")
 
-    def _renderizar_lista(self):
-        for w in self.lista_frame.winfo_children():
-            w.destroy()
+    def _on_scroll(self, first, last):
+        self.scrollbar.set(first, last)
+        self._atualizar_janela()
+
+    def _on_canvas_configure(self, event):
+        self._largura = event.width
+        self._atualizar_scrollregion()
+        self._atualizar_janela()
+
+    def _cancelar_after(self, attr):
+        job = getattr(self, attr)
+        if job is not None:
+            try:
+                self.master.after_cancel(job)
+            except Exception:
+                pass
+            setattr(self, attr, None)
+
+    def _renderizar_lista(self, debounce=False):
+        if debounce:
+            self._cancelar_after("_render_job")
+            self._render_job = self.master.after(
+                DEBOUNCE_BUSCA_MS, self._renderizar_lista
+            )
+            return
+
+        self._render_job = None
+
+        if self.canvas is None or not self.canvas.winfo_exists():
+            return
 
         termo = self.busca_entry.get() if hasattr(self, "busca_entry") else ""
-        filtrados = buscar_registros(self.registros, termo)
-
-        if not filtrados:
-            ctk.CTkLabel(
-                self.lista_frame,
-                text="📭 Nenhum registro encontrado.\nClique em '➕ Novo Registro' para começar.",
-                font=ctk.CTkFont(size=14),
-                text_color="gray"
-            ).pack(pady=60)
-        else:
-            for i, reg in enumerate(filtrados):
-                self._render_card(reg, i)
+        self._filtrados = buscar_registros(self.registros, termo)
 
         self.status.configure(
-            text=f"Total: {len(self.registros)} registro(s) | Exibindo: {len(filtrados)}"
+            text=f"Total: {len(self.registros)} registro(s) | Exibindo: {len(self._filtrados)}"
         )
 
-    def _render_card(self, reg, indice):
-        cor_clara = "#2f2f2f"
-        cor_escura = "#262626"
-        cor_card = cor_clara if indice % 2 == 0 else cor_escura
+        self._garantir_altura_card()
+        self.canvas.yview_moveto(0)
+        self._atualizar_scrollregion()
 
-        card = ctk.CTkFrame(
-            self.lista_frame,
-            corner_radius=10,
-            fg_color=cor_card
-        )
-        card.pack(fill="x", pady=2, padx=2)
+        if not self._filtrados:
+            for card in self._pool:
+                card["frame"].place_forget()
+            self._vazio_label.place(relx=0.5, rely=0.5, anchor="center")
+            return
+
+        self._vazio_label.place_forget()
+        self._atualizar_janela()
+
+    def _garantir_altura_card(self):
+        if self._row_h is not None:
+            return
+        card = self._criar_card()
+        card["frame"].update_idletasks()
+        self._row_h = max(card["frame"].winfo_reqheight() + 4, 44)
+        self._pool.append(card)
+
+    def _atualizar_scrollregion(self):
+        if self._row_h is None:
+            return
+        largura = self._largura or self.canvas.winfo_width() or 400
+        altura = max(self._row_h, len(self._filtrados) * self._row_h)
+        self.canvas.configure(scrollregion=(0, 0, largura, altura))
+
+    def _atualizar_janela(self):
+        if self._row_h is None or not self._filtrados:
+            return
+
+        topo = self.canvas.canvasy(0)
+        altura_visivel = self.canvas.winfo_height()
+        primeiro = max(0, int(topo // self._row_h))
+        quantidade = int(altura_visivel // self._row_h) + 2
+        ultimo = min(len(self._filtrados), primeiro + quantidade)
+
+        for card in self._pool:
+            card["frame"].place_forget()
+
+        largura = self._largura or self.canvas.winfo_width() or 400
+        for posicao, indice in enumerate(range(primeiro, ultimo)):
+            card = self._obter_card(posicao)
+            y = indice * self._row_h - topo
+            self._preencher_card(card, self._filtrados[indice], indice, y, largura)
+
+    def _obter_card(self, posicao):
+        while len(self._pool) <= posicao:
+            self._pool.append(self._criar_card())
+        return self._pool[posicao]
+
+    def _criar_card(self):
+        # Wrapper nativo: aceita width/height no place (o CTkFrame não aceita).
+        wrapper = tk.Frame(self.canvas, bd=0, highlightthickness=0, bg=self._fundo)
+        card = ctk.CTkFrame(wrapper, corner_radius=10, fg_color=COR_CARD_PAR)
+        card.pack(fill="both", expand=True)
 
         info = ctk.CTkFrame(card, fg_color="transparent")
         info.pack(side="left", fill="both", expand=True, padx=10, pady=8)
 
-        ctk.CTkLabel(
-            info,
-            text=f"🏷️  {reg['nome']}",
-            font=ctk.CTkFont(size=15, weight="bold")
-        ).pack(anchor="w")
+        nome = ctk.CTkLabel(
+            info, text="", font=ctk.CTkFont(size=15, weight="bold"), anchor="w"
+        )
+        nome.pack(anchor="w", fill="x")
 
-        ctk.CTkLabel(
-            info,
-            text=f"👤  {reg['login']}",
-            font=ctk.CTkFont(size=12),
-            text_color="#9ca3af"
-        ).pack(anchor="w", pady=2)
+        login = ctk.CTkLabel(
+            info, text="", font=ctk.CTkFont(size=12),
+            text_color="#9ca3af", anchor="w"
+        )
+        login.pack(anchor="w", pady=2, fill="x")
 
-        if reg.get("url"):
-            ctk.CTkLabel(
-                info,
-                text=f"🔗  {reg['url']}",
-                font=ctk.CTkFont(size=11),
-                text_color="#60a5fa"
-            ).pack(anchor="w")
+        url = ctk.CTkLabel(
+            info, text="", font=ctk.CTkFont(size=11),
+            text_color="#60a5fa", anchor="w"
+        )
+        url.pack(anchor="w", fill="x")
 
         botoes = ctk.CTkFrame(card, fg_color="transparent")
         botoes.pack(side="right", padx=2, pady=2)
 
-        ctk.CTkButton(
-            botoes,
-            text="📋 Copiar",
-            width=80,
-            fg_color="#16a085",
-            command=lambda r=reg: self._copiar_senha(r)
-        ).pack(side="left", padx=2)
+        copiar = ctk.CTkButton(botoes, text="📋 Copiar", width=80, fg_color="#16a085")
+        copiar.pack(side="left", padx=2)
 
-        ctk.CTkButton(
-            botoes,
-            text="✏️ Editar",
-            width=80,
-            fg_color="#d68910",
-            command=lambda r=reg: self._editar(r)
-        ).pack(side="left", padx=2)
+        editar = ctk.CTkButton(botoes, text="✏️ Editar", width=80, fg_color="#d68910")
+        editar.pack(side="left", padx=2)
 
-        ctk.CTkButton(
-            botoes,
-            text="🗑️ Excluir",
-            width=80,
-            fg_color="#c0392b",
-            command=lambda r=reg: self._deletar(r)
-        ).pack(side="left", padx=2)
+        excluir = ctk.CTkButton(botoes, text="🗑️ Excluir", width=80, fg_color="#c0392b")
+        excluir.pack(side="left", padx=2)
+
+        return {
+            "frame": wrapper,
+            "card": card,
+            "nome": nome,
+            "login": login,
+            "url": url,
+            "copiar": copiar,
+            "editar": editar,
+            "excluir": excluir,
+        }
+
+    def _preencher_card(self, card, reg, indice, y, largura):
+        card["card"].configure(
+            fg_color=COR_CARD_PAR if indice % 2 == 0 else COR_CARD_IMPAR
+        )
+        card["nome"].configure(text=f"🏷️  {reg['nome']}")
+        card["login"].configure(text=f"👤  {reg['login']}")
+        card["url"].configure(text=f"🔗  {reg['url']}" if reg.get("url") else "")
+        card["copiar"].configure(command=lambda r=reg: self._copiar_senha(r))
+        card["editar"].configure(command=lambda r=reg: self._editar(r))
+        card["excluir"].configure(command=lambda r=reg: self._deletar(r))
+        card["frame"].place(x=0, y=y, width=largura, height=self._row_h)
 
     def _toggle_senha(self, rid):
         self.senha_visivel[rid] = not self.senha_visivel.get(rid, False)
@@ -233,6 +335,9 @@ class TelaPrincipal:
             messagebox.showerror("Erro", f"Falha ao salvar cofre:\n{e}")
 
     def _sair(self):
+        self._cancelar_after("_render_job")
+        self.master.unbind_all("<Button-4>")
+        self.master.unbind_all("<Button-5>")
         self.senha = None
         self.secret_id = None
         self.registros = None
