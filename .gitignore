@@ -49,4 +49,10 @@ build_appimage/
 *.AppDir/
 *.spec.bak
 
+# Artefatos de release (binários/assinaturas gerados)
+release/**/SHA256SUMS
+release/**/SHA256SUMS.asc
+release/**/DANIEL-PUBKEY.asc
+
+
 
