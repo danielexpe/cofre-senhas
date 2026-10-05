@@ -70,7 +70,7 @@ class TelaInicial:
         # Rodapé
         ctk.CTkLabel(
             frame,
-            text="v1.4.1 • Encriptação AES + SHA512 + PBKDF2",
+            text="v1.5.0 • Encriptação AES + SHA512 + PBKDF2",
             font=ctk.CTkFont(size=11),
             text_color="gray"
         ).pack(side="bottom", pady=10)

@@ -4,7 +4,7 @@ set -e  # para no primeiro erro
 
 PROJETO_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 APP_NAME="CofreDeSenhas"
-VERSION="1.4.1"
+VERSION="1.5.0"
 BUILD_DIR="$PROJETO_DIR/build_appimage"
 APPDIR="$BUILD_DIR/${APP_NAME}.AppDir"
 
