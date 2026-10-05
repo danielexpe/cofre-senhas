@@ -3,8 +3,8 @@
 # Gera, assina e verifica os artefatos de release do Cofre de Senhas.
 #
 # Uso:
-#   scripts/release.sh                    # VERSION=1.3, TAG=v1.3.0
-#   VERSION=1.4 TAG=v1.4.0 scripts/release.sh
+#   scripts/release.sh                    # VERSION=1.4, TAG=v1.4.0
+#   VERSION=1.5 TAG=v1.5.0 scripts/release.sh
 #   SKIP_BUILD=1 scripts/release.sh       # reaproveita o AppDir já gerado
 #
 # Requisitos:
@@ -17,7 +17,7 @@
 #
 set -euo pipefail
 
-VERSION="${VERSION:-1.3}"
+VERSION="${VERSION:-1.4}"
 TAG="${TAG:-v${VERSION}.0}"
 GPG_KEY="${GPG_KEY:-F7E956C837ABD08F}"
 APPIMAGETOOL="${APPIMAGETOOL:-$HOME/ferramentas/appimagetool-x86_64.AppImage}"
