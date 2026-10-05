@@ -99,8 +99,7 @@ class TelaPrincipal:
 
         self.canvas.configure(yscrollcommand=self._on_scroll)
         self.canvas.bind("<Configure>", self._on_canvas_configure)
-        self._container.bind("<Enter>", self._ativar_scroll_lista)
-        self._container.bind("<Leave>", self._desativar_scroll_lista)
+        self._bind_mousewheel()
 
         self._vazio_label = ctk.CTkLabel(
             self.canvas,
@@ -119,27 +118,34 @@ class TelaPrincipal:
 
         self._renderizar_lista()
 
-    def _ativar_scroll_lista(self, event=None):
-        if self.canvas is None:
-            return
+    def _bind_mousewheel(self):
+        self._unbind_mousewheel()
+        self.master.bind_all("<Button-4>", self._on_mousewheel, add="+")
+        self.master.bind_all("<Button-5>", self._on_mousewheel, add="+")
+        self.master.bind_all("<MouseWheel>", self._on_mousewheel, add="+")
 
-        self.master.bind_all("<Button-4>", self._on_mousewheel_linux)
-        self.master.bind_all("<Button-5>", self._on_mousewheel_linux)
-
-    def _desativar_scroll_lista(self, event=None):
-        if self.canvas is None:
-            return
-
+    def _unbind_mousewheel(self):
         self.master.unbind_all("<Button-4>")
         self.master.unbind_all("<Button-5>")
+        self.master.unbind_all("<MouseWheel>")
 
-    def _on_mousewheel_linux(self, event):
-        if self.canvas is None:
+    def _widget_na_lista(self, widget):
+        while widget is not None:
+            if widget is self._container:
+                return True
+            widget = getattr(widget, "master", None)
+        return False
+
+    def _on_mousewheel(self, event):
+        if self.canvas is None or not self.canvas.winfo_exists():
             return
 
-        if event.num == 4:
+        if not self._widget_na_lista(event.widget):
+            return
+
+        if event.num == 4 or getattr(event, "delta", 0) > 0:
             self.canvas.yview_scroll(-1, "units")
-        elif event.num == 5:
+        elif event.num == 5 or getattr(event, "delta", 0) < 0:
             self.canvas.yview_scroll(1, "units")
 
     def _on_scroll(self, first, last):
@@ -336,8 +342,7 @@ class TelaPrincipal:
 
     def _sair(self):
         self._cancelar_after("_render_job")
-        self.master.unbind_all("<Button-4>")
-        self.master.unbind_all("<Button-5>")
+        self._unbind_mousewheel()
         self.senha = None
         self.secret_id = None
         self.registros = None

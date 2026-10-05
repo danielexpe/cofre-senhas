@@ -70,7 +70,7 @@ class TelaInicial:
         # Rodapé
         ctk.CTkLabel(
             frame,
-            text="v1.1 • Encriptação AES + SHA512 + PBKDF2",
+            text="v1.4 • Encriptação AES + SHA512 + PBKDF2",
             font=ctk.CTkFont(size=11),
             text_color="gray"
         ).pack(side="bottom", pady=10)
@@ -103,35 +103,44 @@ class TelaInicial:
         self.lista_scroll = ctk.CTkScrollableFrame(parent, corner_radius=10, height=200)
         self.lista_scroll.pack(fill="both", expand=True, padx=40, pady=(5, 10))
 
-        # Ativa scroll apenas quando o mouse estiver sobre a lista
-        self.lista_scroll.bind("<Enter>", self._ativar_scroll_lista)
-        self.lista_scroll.bind("<Leave>", self._desativar_scroll_lista)
+        self._bind_mousewheel()
 
         for entrada in recentes:
             self._render_card_recente(self.lista_scroll, entrada)
 
-    def _ativar_scroll_lista(self, event=None):
-        if self.lista_scroll is None:
-            return
+    def _bind_mousewheel(self):
+        self._unbind_mousewheel()
+        self.master.bind_all("<Button-4>", self._on_mousewheel, add="+")
+        self.master.bind_all("<Button-5>", self._on_mousewheel, add="+")
+        self.master.bind_all("<MouseWheel>", self._on_mousewheel, add="+")
 
-        self.master.bind_all("<Button-4>", self._on_mousewheel_linux)
-        self.master.bind_all("<Button-5>", self._on_mousewheel_linux)
-
-    def _desativar_scroll_lista(self, event=None):
-        if self.lista_scroll is None:
-            return
-
+    def _unbind_mousewheel(self):
         self.master.unbind_all("<Button-4>")
         self.master.unbind_all("<Button-5>")
+        self.master.unbind_all("<MouseWheel>")
 
-    def _on_mousewheel_linux(self, event):
+    def _widget_na_lista(self, widget):
         if self.lista_scroll is None:
+            return False
+        alvo = self.lista_scroll._parent_frame
+        while widget is not None:
+            if widget is alvo:
+                return True
+            widget = getattr(widget, "master", None)
+        return False
+
+    def _on_mousewheel(self, event):
+        if self.lista_scroll is None or not self.lista_scroll._parent_canvas.winfo_exists():
             return
 
-        if event.num == 4:
-            self.lista_scroll._parent_canvas.yview_scroll(-1, "units")
-        elif event.num == 5:
-            self.lista_scroll._parent_canvas.yview_scroll(1, "units")
+        if not self._widget_na_lista(event.widget):
+            return
+
+        canvas = self.lista_scroll._parent_canvas
+        if event.num == 4 or getattr(event, "delta", 0) > 0:
+            canvas.yview_scroll(-1, "units")
+        elif event.num == 5 or getattr(event, "delta", 0) < 0:
+            canvas.yview_scroll(1, "units")
 
     def _render_card_recente(self, parent, entrada):
         card = ctk.CTkFrame(parent, corner_radius=8, fg_color=("#dbdbdb", "#2d2d2d"))
