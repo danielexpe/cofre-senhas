@@ -10,6 +10,8 @@ script de importação massiva**.
 
 > Especificação completa: [`docs/exportacao_registros.md`](../docs/exportacao_registros.md)
 > Exemplos: [`docs/exportacao_registros_exemplos.md`](../docs/exportacao_registros_exemplos.md)
+> Para gerar um relatório impresso, veja o
+> [guia do script de PDF](./README_exportar_pdf.md).
 
 ---
 

@@ -1,11 +1,14 @@
 altgraph==0.17.5
 cffi==2.0.0
+charset-normalizer==3.5.2
 cryptography==50.0.2
 customtkinter==5.2.2
 darkdetect==0.8.0
 packaging==26.2
+pillow==12.3.0
 pycparser==3.0
 pyinstaller==6.20.0
 pyinstaller-hooks-contrib==2026.5
 pyperclip==1.11.0
+reportlab==5.0.1
 setuptools==84.0.0

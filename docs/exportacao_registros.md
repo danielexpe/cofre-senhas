@@ -12,6 +12,7 @@ Status: **Aprovada e implementada** (`scripts/exportar_registros.py`)
 Documentos relacionados:
 - [Especificação — Importação Massiva](./importacao_massiva.md)
 - [Importação Massiva — Exemplos](./importacao_massiva_exemplos.md)
+- [Especificação — Exportação em PDF](./exportacao_pdf.md)
 - [Guia do script de exportação](../scripts/README_exportar_registros.md)
 
 ---
