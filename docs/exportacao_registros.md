@@ -29,7 +29,8 @@ modelo de dados (`dados/armazenamento.py`) já existentes.
 
 ## 2. Fora de escopo
 
-- Novos botões ou telas na GUI (função apenas via linha de comando).
+- Integração com a GUI (botões na tela principal) — especificada em
+  [integracao_gui.md](./integracao_gui.md).
 - Exportação parcial / filtros (por busca, tag ou seleção de registros).
 - Exportação cifrada do JSON (o arquivo é texto puro por definição; para backup
   seguro, manter o próprio `.vault`).
@@ -306,7 +307,9 @@ de saída, mantendo consistência entre as duas ferramentas.
 
 ## 12. Pontos em aberto (para versões futuras)
 
-1. **Exportação pela GUI** — botão "Exportar" na tela principal.
+1. **Exportação pela GUI** — planejada em
+   [integracao_gui.md](./integracao_gui.md) (botão "Exportar JSON" na tela
+   principal).
 2. **Filtros de exportação** — por busca, seleção de cards ou tags.
 3. **Flags extras** — `--stdout` (imprimir em vez de gravar) e `--indent N`.
 4. **Export cifrado opcional** — ex.: `--encrypt` com uma passphrase própria,

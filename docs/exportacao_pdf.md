@@ -27,7 +27,8 @@ modelo de dados (`dados/armazenamento.py`) já existentes.
 
 ## 2. Fora de escopo
 
-- Novos botões ou telas na GUI.
+- Integração com a GUI (botão na tela principal) — especificada em
+  [integracao_gui.md](./integracao_gui.md).
 - Exportação parcial / filtros (por busca, tag ou seleção de registros).
 - Impressão direta (o usuário abre/imprime o PDF).
 - Assinatura digital do PDF.
@@ -400,7 +401,9 @@ e de códigos de saída.
 
 ## 16. Pontos em aberto (versões futuras)
 
-1. **Exportação pela GUI** — botão "Exportar PDF" na tela principal.
+1. **Exportação pela GUI** — planejada em
+   [integracao_gui.md](./integracao_gui.md) (botão "Exportar PDF" na tela
+   principal).
 2. **Filtros de exportação** — por busca, seleção de cards ou tags.
 3. **Logo/skin configurável** — permitir trocar o ícone ou o título do relatório.
 4. **QR code por registro** — ex.: link para o site.

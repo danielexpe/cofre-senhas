@@ -17,7 +17,8 @@ existente (`seguranca/encriptacao.py`) e o modelo de dados (`dados/armazenamento
 
 ## 2. Fora de escopo
 
-- Novos botões ou telas na GUI.
+- Integração com a GUI (botão na tela principal) — especificada em
+  [integracao_gui.md](./integracao_gui.md).
 - Exportação de registros — especificada em
   [exportacao_registros.md](./exportacao_registros.md).
 - Edição/remoção massiva (apenas inclusão).
