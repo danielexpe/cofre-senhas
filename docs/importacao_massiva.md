@@ -18,7 +18,8 @@ existente (`seguranca/encriptacao.py`) e o modelo de dados (`dados/armazenamento
 ## 2. Fora de escopo
 
 - Novos botões ou telas na GUI.
-- Exportação de registros (fica para outra atividade).
+- Exportação de registros — especificada em
+  [exportacao_registros.md](./exportacao_registros.md).
 - Edição/remoção massiva (apenas inclusão).
 - Sincronização em nuvem ou rede.
 

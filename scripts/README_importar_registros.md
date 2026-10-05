@@ -6,6 +6,10 @@ Script de linha de comando para inserir vários registros de uma só vez em um c
 - Arquivo: `scripts/importar_registros.py`
 - Requer o ambiente virtual ativo com as dependências do projeto (`cryptography`).
 
+> Para o caminho inverso, veja o
+> [guia do script de exportação](./README_exportar_registros.md)
+> (`scripts/exportar_registros.py`), cujo JSON é 100% compatível com este import.
+
 ---
 
 ## 1. Uso básico
