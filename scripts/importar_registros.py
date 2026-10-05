@@ -10,96 +10,15 @@ solicitadas interativamente no terminal; a senha mestra nunca é ecoada.
 """
 import argparse
 import getpass
-import json
 import os
-import shutil
 import sys
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from seguranca.encriptacao import decriptar_cofre, encriptar_cofre
-from dados.armazenamento import novo_registro
-
-
-CAMPOS_CONHECIDOS = {
-    "id", "nome", "login", "senha", "url", "observacoes",
-    "criado_em", "atualizado_em",
-}
-
-
-class ErroJson(Exception):
-    """Erro de leitura/formatação do arquivo JSON de entrada."""
-
-
-def carregar_json(caminho: str) -> list:
-    """Lê e normaliza os formatos aceitos (lista pura ou objeto com 'registros')."""
-    try:
-        with open(caminho, "r", encoding="utf-8") as f:
-            dados = json.load(f)
-    except FileNotFoundError:
-        raise ErroJson(f"arquivo não encontrado: {caminho}")
-    except json.JSONDecodeError as e:
-        raise ErroJson(f"JSON inválido: {e}")
-
-    if isinstance(dados, list):
-        return dados
-    if isinstance(dados, dict) and "registros" in dados:
-        itens = dados["registros"]
-        if not isinstance(itens, list):
-            raise ErroJson("a chave 'registros' deve conter uma lista")
-        return itens
-    raise ErroJson("formato desconhecido: esperada uma lista ou um objeto com 'registros'")
-
-
-def normalizar(item) -> tuple:
-    """Valida um item e devolve (registro, None) ou (None, motivo)."""
-    if not isinstance(item, dict):
-        return None, "item não é um objeto JSON"
-
-    for campo in ("nome", "login", "senha"):
-        if campo not in item:
-            return None, f"campo obrigatório ausente: '{campo}'"
-        valor = item[campo]
-        if not isinstance(valor, str):
-            return None, f"campo '{campo}' deve ser texto"
-        if not valor.strip():
-            return None, f"'{campo}' vazio"
-
-    url = item.get("url", "")
-    if url is None:
-        url = ""
-    elif not isinstance(url, str):
-        url = str(url)
-
-    observacoes = item.get("observacoes", "")
-    if observacoes is None:
-        observacoes = ""
-    elif not isinstance(observacoes, str):
-        observacoes = str(observacoes)
-
-    registro = novo_registro(
-        nome=item["nome"],
-        login=item["login"],
-        senha=item["senha"],
-        url=url,
-        observacoes=observacoes,
-    )
-    return registro, None
-
-
-def chave_duplicidade(registro: dict) -> str:
-    """Chave de duplicidade: 'nome|login' normalizado (case-insensitive, sem pontas)."""
-    nome = str(registro.get("nome", "")).strip().casefold()
-    login = str(registro.get("login", "")).strip().casefold()
-    return f"{nome}|{login}"
-
-
-def fazer_backup(caminho: str, timestamp: str) -> str:
-    """Copia o .vault (já cifrado) com timestamp. Retorna o caminho do backup."""
-    destino = f"{caminho}.{timestamp}.bak"
-    shutil.copy2(caminho, destino)
-    return destino
+from servicos.arquivos import fazer_backup
+from servicos.importacao import ErroJson, carregar_json, planejar_importacao
 
 
 def imprimir_relatorio(caminho_cofre, caminho_json, total_lidos, importaveis,
@@ -180,43 +99,17 @@ def main(argv=None) -> int:
         return 1
 
     # 6. Normalizar / validar / separar
-    chaves_existentes = {chave_duplicidade(r) for r in existentes}
-    chaves_lote = set()
-    importaveis = []
-    invalidos = []
-    duplicados = []
-    repetidos = []
-    campos_extras = set()
-
-    for indice, item in enumerate(itens, start=1):
-        if isinstance(item, dict):
-            campos_extras |= set(item.keys()) - CAMPOS_CONHECIDOS
-
-        registro, motivo = normalizar(item)
-        if registro is None:
-            invalidos.append((indice, motivo))
-            continue
-
-        chave = chave_duplicidade(registro)
-        if chave in chaves_existentes:
-            duplicados.append(
-                (indice, f'já existe no cofre (nome+login: "{registro["nome"]}" / "{registro["login"]}")')
-            )
-            continue
-        if chave in chaves_lote:
-            repetidos.append(
-                (indice, f'repetido no próprio arquivo (nome+login: "{registro["nome"]}" / "{registro["login"]}")')
-            )
-            continue
-
-        chaves_lote.add(chave)
-        importaveis.append(registro)
-
+    res = planejar_importacao(existentes, itens)
+    importaveis = res.importaveis
+    invalidos = res.invalidos
+    duplicados = res.duplicados
+    repetidos = res.repetidos
+    campos_extras = res.campos_extras
     total_cofre = len(existentes) + len(importaveis)
 
     # 7/8. Resumo e confirmação
     if not importaveis:
-        imprimir_relatorio(caminho_cofre, caminho_json, len(itens), importaveis,
+        imprimir_relatorio(caminho_cofre, caminho_json, res.total_lidos, importaveis,
                            duplicados, repetidos, invalidos, None, total_cofre,
                            campos_extras)
         print()
@@ -255,7 +148,7 @@ def main(argv=None) -> int:
         return 1
 
     # 11. Relatório final
-    imprimir_relatorio(caminho_cofre, caminho_json, len(itens), importaveis,
+    imprimir_relatorio(caminho_cofre, caminho_json, res.total_lidos, importaveis,
                        duplicados, repetidos, invalidos, backup, total_cofre,
                        campos_extras)
     return 0

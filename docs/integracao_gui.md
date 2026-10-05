@@ -7,7 +7,7 @@
 
 Versão do documento: 0.1
 Autor: Daniel
-Status: **Aprovada — pronta para implementação**
+Status: **Aprovada e implementada**
 
 Documentos relacionados:
 - [Exportação de registros (JSON)](./exportacao_registros.md)
