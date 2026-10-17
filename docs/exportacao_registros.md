@@ -53,7 +53,7 @@ modelo de dados (`dados/armazenamento.py`) já existentes.
 | Proteção do arquivo | **Aviso de texto puro** + permissão restrita **`0600`** (best-effort no Windows) |
 | Escrita | **Atômica** (arquivo temporário no mesmo diretório + `os.replace`) |
 | Codificação | UTF-8, `indent=2`, `ensure_ascii=False`, com quebra de linha final |
-| Secret ID | **Lido do cabeçalho** do `.vault` (`ler_secret_id_do_arquivo`) |
+| Secret ID | Obtido do cache local pelo caminho (`buscar_secret_id`); se ausente, prompt no terminal. O `.vault` não contém o SID |
 | Senha mestra | Prompt com `getpass` — **nunca** por argumento nem ecoada |
 | Cofre vazio | Gera `{"registros": []}` e reporta 0 exportados (código `0`) |
 | Cofre alterado | **Nunca** — a operação é somente leitura no `.vault` |
@@ -127,7 +127,7 @@ Essa é a única situação em que o round-trip não reproduz um registro.
 1. Obter o caminho do JSON de saída (argumento posicional ou prompt).
 2. Prompt: caminho do cofre (.vault).
 3. Verificar se o arquivo do cofre existe.
-4. Ler o Secret ID do cabeçalho do .vault (ler_secret_id_do_arquivo).
+4. Obter o Secret ID do cache local (buscar_secret_id); se ausente, pedir no terminal.
 5. Prompt: Senha Mestra (getpass).
 6. Decriptar o cofre (decriptar_cofre) → lista de registros.
 7. Montar o payload {"registros": [...]} com os 5 campos.
@@ -163,7 +163,7 @@ As credenciais **não** são argumentos de linha de comando:
 | Dado | Forma de obtenção |
 |------|-------------------|
 | Caminho do cofre | Prompt interativo (`input`) |
-| Secret ID | Lido automaticamente do cabeçalho do `.vault` |
+| Secret ID | Obtido do cache local; se ausente, prompt no terminal |
 | Senha mestra | Prompt (`getpass.getpass`) — não aparece na tela |
 
 ---
@@ -241,7 +241,8 @@ scripts/
 Implementado como arquivo único, importando:
 
 ```python
-from seguranca.encriptacao import decriptar_cofre, ler_secret_id_do_arquivo
+from dados.cache import buscar_secret_id
+from seguranca.encriptacao import decriptar_cofre
 from dados.armazenamento import buscar_registros  # (opcional; export usa a lista inteira)
 ```
 
@@ -284,7 +285,7 @@ de saída, mantendo consistência entre as duas ferramentas.
 13. Registro com campo obrigatório vazio → exportado e listado nos avisos de
     round-trip.
 14. Nenhuma alteração no `.vault` (hash do arquivo idêntico antes/depois).
-15. Secret ID lido corretamente do cabeçalho (sem prompt de Secret ID).
+15. Secret ID obtido do cache sem prompt; fallback de prompt quando ausente.
 
 ---
 

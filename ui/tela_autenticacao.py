@@ -1,7 +1,7 @@
 import os
 import customtkinter as ctk
 from tkinter import messagebox
-from seguranca.encriptacao import decriptar_cofre
+from seguranca.encriptacao import decriptar_cofre, encriptar_cofre, ler_versao_cofre
 
 
 class TelaAutenticacao:
@@ -74,12 +74,29 @@ class TelaAutenticacao:
 
         try:
             registros = decriptar_cofre(self.caminho, sid, senha)
-            from ui.tela_principal import TelaPrincipal
-            TelaPrincipal(self.master, self.caminho, sid, senha, registros)
         except ValueError as e:
             messagebox.showerror("Falha", str(e))
+            return
         except Exception as e:
             messagebox.showerror("Erro", f"Erro inesperado:\n{e}")
+            return
+
+        self._migrar_para_v2(sid, senha, registros)
+
+        from ui.tela_principal import TelaPrincipal
+        TelaPrincipal(self.master, self.caminho, sid, senha, registros)
+
+    def _migrar_para_v2(self, sid, senha, registros):
+        try:
+            if ler_versao_cofre(self.caminho) != 1:
+                return
+            encriptar_cofre(self.caminho, sid, senha, registros)
+        except Exception as e:
+            messagebox.showwarning(
+                "Aviso",
+                "O cofre foi aberto, mas não pôde ser convertido para o formato "
+                f"seguro v2:\n{e}\n\nA conversão será tentada novamente ao salvar."
+            )
 
     def _voltar(self):
         from ui.tela_inicial import TelaInicial

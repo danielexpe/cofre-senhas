@@ -9,8 +9,9 @@ Uso:
     python scripts/exportar_registros.py [SAIDA.json] [-f]
 
 O caminho do cofre e a senha mestra são sempre solicitados interativamente no
-terminal; o Secret ID é lido do cabeçalho do próprio .vault. A senha mestra
-nunca é ecoada.
+terminal; o Secret ID é obtido do cache local pelo caminho do cofre e, se não
+estiver lá, solicitado no terminal. O .vault não contém o Secret ID. A senha
+mestra nunca é ecoada.
 """
 import argparse
 import getpass
@@ -19,7 +20,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from seguranca.encriptacao import decriptar_cofre, ler_secret_id_do_arquivo
+from dados.cache import buscar_secret_id
+from seguranca.encriptacao import decriptar_cofre
 from servicos.exportacao_json import (
     escrever_json_atomico,
     montar_payload,
@@ -83,12 +85,12 @@ def main(argv=None) -> int:
         print(f"Erro: cofre não encontrado: {caminho_cofre}", file=sys.stderr)
         return 1
 
-    # 4. Secret ID lido do cabeçalho
-    try:
-        secret_id = ler_secret_id_do_arquivo(caminho_cofre)
-    except (ValueError, OSError) as e:
-        print(f"Erro: {e}", file=sys.stderr)
-        return 1
+    # 4. Secret ID: cache local ou terminal
+    secret_id = buscar_secret_id(caminho_cofre)
+    if secret_id:
+        print("Secret ID carregado do histórico local.")
+    else:
+        secret_id = input("Secret ID: ").strip()
 
     # 5. Senha mestra
     senha_mestra = getpass.getpass("Senha Mestra: ")

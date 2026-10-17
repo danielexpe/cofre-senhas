@@ -28,19 +28,22 @@ O **Cofre de Senhas** é uma aplicação desktop para armazenamento seguro de cr
 
 ### Como funciona a criptografia?
 
-1. Sua **senha mestra** passa por **PBKDF2** (centenas de milhares de iterações) com salt aleatório
-2. A chave derivada criptografa o conteúdo do cofre via **AES**
+1. Seu **Secret ID** + **senha mestra** passam por **PBKDF2** (centenas de milhares de iterações) com salt aleatório
+2. A chave derivada criptografa o conteúdo do cofre via **AES** (Fernet)
 3. A integridade é validada por hash **SHA512**
-4. O **Secret ID** atua como camada adicional de identificação
+4. O **Secret ID** atua como camada adicional de identificação e **nunca é gravado no `.vault`**
 
 ### Princípios adotados
 
 - ✅ Senha mestra **nunca** é armazenada (nem em cache, nem em arquivo)
 - ✅ Cada cofre tem seu próprio salt único
-- ✅ Cache local guarda apenas metadados não-sensíveis (caminhos e Secret IDs)
+- ✅ O Secret ID **não** é gravado nos arquivos `.vault` (formato v2)
+- ✅ Cache local guarda caminhos e Secret IDs por conveniência; o risco do cache é assumido pelo usuário
 - ✅ Validação automática remove referências a cofres inexistentes
 
-> ⚠️ **Aviso importante**: se você esquecer sua senha mestra, **não há como recuperá-la**. Esse é o preço da segurança real. Faça backups dos seus arquivos `.vault`.
+> ⚠️ **Aviso importante**: se você esquecer sua senha mestra ou o Secret ID, **não há como recuperá-los**. Esse é o preço da segurança real. Faça backups dos seus arquivos `.vault` e guarde o Secret ID em local seguro.
+
+> ℹ️ Cofres convertidos para o formato v2 não podem ser abertos por versões antigas do aplicativo.
 
 ---
 

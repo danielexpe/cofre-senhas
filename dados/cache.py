@@ -81,6 +81,16 @@ def adicionar_ou_atualizar(caminho_vault: str, secret_id: str):
     _gravar(recentes)
 
 
+def buscar_secret_id(caminho_vault: str):
+    """Retorna o Secret ID associado ao caminho, ou None se não estiver no cache."""
+    alvo = os.path.abspath(os.path.expanduser(caminho_vault))
+    for entrada in carregar_cache():
+        atual = os.path.abspath(os.path.expanduser(entrada.get("caminho", "")))
+        if atual == alvo:
+            return entrada.get("secret_id")
+    return None
+
+
 def remover(caminho_vault: str):
     """Remove uma entrada específica do cache."""
     recentes = carregar_cache()

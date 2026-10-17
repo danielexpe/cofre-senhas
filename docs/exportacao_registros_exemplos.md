@@ -74,11 +74,13 @@ são reimportados sem perda.
 python scripts/exportar_registros.py meu_cofre.json
 ```
 
-O script pergunta interativamente **apenas o caminho do cofre** e a senha mestra
-(o Secret ID é lido do próprio arquivo `.vault`):
+O script pergunta interativamente o caminho do cofre e a senha mestra. O Secret
+ID é obtido do cache local pelo caminho; se não estiver no cache, o script
+também o pede no terminal (o `.vault` não contém o Secret ID):
 
 ```
 Caminho do cofre (.vault): /home/daniel/meu_cofre.vault
+Secret ID: (somente se não estiver no cache local)
 Senha Mestra: (a digitação não aparece)
 ```
 

@@ -37,7 +37,8 @@ Caminho do cofre (.vault): /home/daniel/meu_cofre.vault
 Senha Mestra: (a digitação não aparece)
 ```
 
-O **Secret ID** é lido automaticamente do cabeçalho do `.vault` — não é pedido.
+O **Secret ID** é obtido do cache local pelo caminho do cofre; se não estiver
+no cache, é pedido no terminal. O `.vault` não contém o Secret ID.
 
 ---
 
@@ -70,10 +71,12 @@ Opções:
 |-------|--------|------------|
 | 1 | `Arquivo JSON de saída:` | Só aparece se a saída **não** foi passada como argumento. |
 | 2 | `Caminho do cofre (.vault):` | Aceita `~`. |
-| 3 | `Senha Mestra:` | Lida com `getpass` — a digitação **não** aparece na tela. |
-| 4 | `O arquivo ... já existe. Sobrescrever? [s/N]:` | Só aparece se a saída já existir e **sem** `--force`. |
+| 3 | `Secret ID:` | Só aparece se o SID **não** estiver no cache local. |
+| 4 | `Senha Mestra:` | Lida com `getpass` — a digitação **não** aparece na tela. |
+| 5 | `O arquivo ... já existe. Sobrescrever? [s/N]:` | Só aparece se a saída já existir e **sem** `--force`. |
 
-O Secret ID **não** é pedido: é lido do cabeçalho do arquivo `.vault`.
+O Secret ID é obtido do cache local pelo caminho do cofre; se não estiver lá,
+é pedido no terminal. O `.vault` não contém o Secret ID.
 
 Exemplo de sessão:
 
@@ -81,6 +84,7 @@ Exemplo de sessão:
 $ python scripts/exportar_registros.py ~/migracao.json
 
 Caminho do cofre (.vault): /home/daniel/meu_cofre.vault
+Secret ID:             (somente se não estiver no cache local)
 Senha Mestra:          (a digitação não aparece)
 
 === Exportação — Cofre de Senhas ===

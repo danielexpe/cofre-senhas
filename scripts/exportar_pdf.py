@@ -10,8 +10,9 @@ Uso:
     python scripts/exportar_pdf.py [SAIDA.pdf] [-f]
 
 O caminho do cofre, a senha mestra e a senha de abertura do PDF são sempre
-solicitados interativamente no terminal. O Secret ID é lido do cabeçalho do
-próprio .vault. As senhas nunca são ecoadas.
+solicitados interativamente no terminal. O Secret ID é obtido do cache local
+pelo caminho do cofre e, se não estiver lá, solicitado no terminal. O .vault
+não contém o Secret ID. As senhas nunca são ecoadas.
 """
 import argparse
 import getpass
@@ -20,7 +21,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from seguranca.encriptacao import decriptar_cofre, ler_secret_id_do_arquivo
+from dados.cache import buscar_secret_id
+from seguranca.encriptacao import decriptar_cofre
 from servicos.exportacao_pdf import gerar_pdf, ordenar_registros
 
 
@@ -73,11 +75,11 @@ def main(argv=None) -> int:
         print(f"Erro: cofre não encontrado: {caminho_cofre}", file=sys.stderr)
         return 1
 
-    try:
-        secret_id = ler_secret_id_do_arquivo(caminho_cofre)
-    except (ValueError, OSError) as e:
-        print(f"Erro: {e}", file=sys.stderr)
-        return 1
+    secret_id = buscar_secret_id(caminho_cofre)
+    if secret_id:
+        print("Secret ID carregado do histórico local.")
+    else:
+        secret_id = input("Secret ID: ").strip()
 
     senha_mestra = getpass.getpass("Senha Mestra: ")
     try:

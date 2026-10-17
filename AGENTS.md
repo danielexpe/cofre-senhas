@@ -1,10 +1,12 @@
 # AGENTS.md — Guia de Desenvolvimento
 
-Guia de referência para dar continuidade ao projeto **Cofre de Senhas** (v1.6.0). Leia antes de mexer no código.
+Guia de referência para dar continuidade ao projeto **Cofre de Senhas** (v2.0.0). Leia antes de mexer no código.
 
 ## Visão geral
 
 Gerenciador de senhas desktop, 100% local, em Python + **CustomTkinter**. Tema escuro, interface em **pt-BR**, criptografia AES + SHA512 + PBKDF2. Nenhuma informação trafega pela internet.
+
+Formato de cofre atual: **v2** (`[VAULTv2][salt 16][salt2 32][Fernet]`). O Secret ID **nunca** é gravado no `.vault`; ele fica no cache local (`~/.cofre_cache.json`) ou é digitado pelo usuário. Cofres v1 são lidos e migrados automaticamente no login. Ver `docs/seguranca_vault_v2.md`.
 
 ## Como rodar
 

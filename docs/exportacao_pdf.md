@@ -52,7 +52,7 @@ modelo de dados (`dados/armazenamento.py`) já existentes.
 | Ordem | **Alfabética por `nome`** (case-insensitive e sem acento) |
 | Senhas | **Sempre exibidas em texto puro** (fonte monoespaçada) |
 | Cifra do PDF | **Pergunta sempre a senha do PDF**; **vazia → sem cifra (com aviso)**; não vazia → **AES** |
-| Credenciais do cofre | Caminho por prompt; **Secret ID** lido do cabeçalho; **senha mestra** via `getpass` |
+| Credenciais do cofre | Caminho por prompt; **Secret ID** do cache local (ou prompt); **senha mestra** via `getpass` |
 | Caminho de saída | **Argumento posicional opcional**; se omitido, pergunta |
 | Arquivo existente | **Confirmar** (s/N); `--force` sobrescreve sem perguntar |
 | Escrita | **Atômica** (arquivo temporário + `os.replace`), UTF-8, permissão **`0600`** |
@@ -221,7 +221,7 @@ Fluxo da senha de abertura do PDF (independente da senha mestra do cofre):
 1. Obter o caminho do PDF de saída (argumento posicional ou prompt).
 2. Prompt: caminho do cofre (.vault).
 3. Verificar se o arquivo do cofre existe.
-4. Ler o Secret ID do cabeçalho do .vault (ler_secret_id_do_arquivo).
+4. Obter o Secret ID do cache local (buscar_secret_id); se ausente, pedir no terminal.
 5. Prompt: Senha Mestra (getpass).
 6. Decriptar o cofre (decriptar_cofre) → lista de registros.
 7. Ordenar alfabeticamente por nome e montar os cards.
@@ -258,7 +258,7 @@ Credenciais e senha do PDF **não** são argumentos de linha de comando:
 | Dado | Forma de obtenção |
 |------|-------------------|
 | Caminho do cofre | Prompt interativo (`input`) |
-| Secret ID | Lido do cabeçalho do `.vault` |
+| Secret ID | Obtido do cache local; se ausente, prompt no terminal |
 | Senha mestra | Prompt (`getpass`) |
 | Senha de abertura do PDF | Prompt (`getpass`); vazio = sem cifra |
 

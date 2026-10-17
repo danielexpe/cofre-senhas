@@ -3,8 +3,8 @@
 # Gera, assina e verifica os artefatos de release do Cofre de Senhas.
 #
 # Uso:
-#   scripts/release.sh                    # VERSION=1.6.0, TAG=v1.6.0
-#   VERSION=1.7 TAG=v1.7.0 scripts/release.sh
+#   scripts/release.sh                    # VERSION=2.0.0, TAG=v2.0.0
+#   VERSION=2.1 TAG=v2.1.0 scripts/release.sh
 #   SKIP_BUILD=1 scripts/release.sh       # reaproveita o AppDir já gerado
 #
 # Requisitos:
@@ -17,8 +17,8 @@
 #
 set -euo pipefail
 
-VERSION="${VERSION:-1.6.0}"
-TAG="${TAG:-v1.6.0}"
+VERSION="${VERSION:-2.0.0}"
+TAG="${TAG:-v2.0.0}"
 GPG_KEY="${GPG_KEY:-F7E956C837ABD08F}"
 APPIMAGETOOL="${APPIMAGETOOL:-$HOME/ferramentas/appimagetool-x86_64.AppImage}"
 
@@ -34,8 +34,8 @@ echo "==> Release $TAG (AppImage $VERSION)"
 if [ "${SKIP_BUILD:-0}" != "1" ]; then
     echo "==> Build com PyInstaller + AppImage..."
     ( cd "$PROJ" && PATH="$PROJ/.venv/bin:$PATH" bash build_appimage.sh )
-    # build_appimage.sh remove *.spec; restaura se for versionado
-    ( cd "$PROJ" && git checkout -- CofreDeSenhas.spec 2>/dev/null || true )
+    # build_appimage.sh remove *.spec; restaura os versionados
+    ( cd "$PROJ" && git checkout -- CofreDeSenhas.spec CofreSenhas.spec 2>/dev/null || true )
 else
     echo "==> Build pulado (SKIP_BUILD=1)"
 fi
