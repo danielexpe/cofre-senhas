@@ -67,10 +67,10 @@ class TelaPrincipal:
 
         self.btn_sair = ctk.CTkButton(
             cabecalho,
-            text="🚪 Sair",
-            width=80,
+            text="⏻  Sair",
+            width=70,
             height=34,
-            font=ctk.CTkFont(size=13),
+            font=ctk.CTkFont(size=13, weight="bold"),
             fg_color="#c0392b",
             hover_color="#922b21",
             command=self._sair
@@ -79,8 +79,8 @@ class TelaPrincipal:
 
         self.btn_novo = ctk.CTkButton(
             cabecalho,
-            text="➕ Novo",
-            width=100,
+            text="✚ Novo",
+            width=70,
             height=34,
             font=ctk.CTkFont(size=13, weight="bold"),
             command=self._novo_registro
@@ -89,30 +89,30 @@ class TelaPrincipal:
 
         self.btn_export_pdf = ctk.CTkButton(
             cabecalho,
-            text="📄",
-            width=40,
+            text="📄 PDF",
+            width=70,
             height=34,
-            font=ctk.CTkFont(size=15),
+            font=ctk.CTkFont(size=13, weight="bold"),
             command=self._exportar_pdf
         )
         self.btn_export_pdf.pack(side="right", padx=(8, 0))
 
         self.btn_import_json = ctk.CTkButton(
             cabecalho,
-            text="⬇️",
-            width=40,
+            text="⬆️ JSON",
+            width=70,
             height=34,
-            font=ctk.CTkFont(size=15),
+            font=ctk.CTkFont(size=13, weight="bold"),
             command=self._importar_json
         )
         self.btn_import_json.pack(side="right", padx=(8, 0))
 
         self.btn_export_json = ctk.CTkButton(
             cabecalho,
-            text="⬆️",
-            width=40,
+            text="⬇️ JSON",
+            width=70,
             height=34,
-            font=ctk.CTkFont(size=15),
+            font=ctk.CTkFont(size=13, weight="bold"),
             command=self._exportar_json
         )
         self.btn_export_json.pack(side="right", padx=(8, 0))
@@ -360,15 +360,15 @@ class TelaPrincipal:
         botoes = ctk.CTkFrame(card, fg_color="transparent")
         botoes.pack(side="right", padx=(0, 8), pady=6)
 
-        copiar = ctk.CTkButton(botoes, text="📋", width=32, height=28, fg_color="#16a085")
+        copiar = ctk.CTkButton(botoes, text="📋", width=40, height=34, fg_color="#16a085")
         copiar.pack(side="left", padx=2)
         Tooltip(copiar, "Copiar senha")
 
-        editar = ctk.CTkButton(botoes, text="✏️", width=32, height=28, fg_color="#d68910")
+        editar = ctk.CTkButton(botoes, text="🖊️", width=40, height=34, fg_color="#d68910")
         editar.pack(side="left", padx=2)
         Tooltip(editar, "Editar")
 
-        excluir = ctk.CTkButton(botoes, text="🗑️", width=32, height=28, fg_color="#c0392b")
+        excluir = ctk.CTkButton(botoes, text="🗑️", width=40, height=34, fg_color="#c0392b")
         excluir.pack(side="left", padx=2)
         Tooltip(excluir, "Excluir")
 
