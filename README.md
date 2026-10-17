@@ -129,10 +129,10 @@ python main.py
 ### Primeiro acesso (criar um cofre)
 
 1. Abra a aplicação
-2. Clique em **"Criar Novo Cofre"**
+2. Clique em **"➕ Novo"**
 3. Defina:
    - 📁 **Local do arquivo** (onde o .vault será salvo)
-   - 🆔 **Secret ID** (identificador único, ex: daniel_pessoal)
+   - 🔑 **Secret ID** (gerado automaticamente — copie e guarde em local seguro)
    - 🔑 **Senha Mestra** (forte, com letras, números e símbolos)
 4. Pronto! Seu cofre está criado e criptografado
 
@@ -215,8 +215,9 @@ pyinstaller --name CofreSenhas --onefile --windowed \\
 - [x] Empacotamento como AppImage
 - [x] Build para Windows (.exe)
 - [x] Busca/filtro de senhas
-- [ ] Gerador de senhas fortes integrado
-- [ ] Exportar/importar cofre (backup)
+- [x] Gerador de senhas fortes integrado
+- [x] Exportar/importar registros (JSON) e relatório PDF
+- [ ] Exportar/importar cofre completo (backup)
 
 ---
 
