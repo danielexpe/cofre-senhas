@@ -114,6 +114,8 @@ class TelaInicial:
         self._bind_mousewheel()
 
         recentes = carregar_cache()
+        self._atualizar_scrollbar(len(recentes))
+
         if not recentes:
             ctk.CTkLabel(
                 self.lista_scroll,
@@ -127,6 +129,17 @@ class TelaInicial:
 
         for entrada in recentes:
             self._render_card_recente(self.lista_scroll, entrada)
+
+    def _atualizar_scrollbar(self, quantidade):
+        if self.lista_scroll is None:
+            return
+        scrollbar = getattr(self.lista_scroll, "_scrollbar", None)
+        if scrollbar is None:
+            return
+        if quantidade > 5:
+            scrollbar.grid()
+        else:
+            scrollbar.grid_remove()
 
     def _bind_mousewheel(self):
         self._unbind_mousewheel()
