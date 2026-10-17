@@ -35,7 +35,11 @@ Objetivo: retomar rapidamente em caso de interrupção.
 
 ## Release
 
-- Versão 2.0.0 preparada, com notas em `release/v2.0.0/RELEASE_NOTES.md`.
+- Versão 2.0.0 publicada em 2026-10-17.
+- Tag: `v2.0.0`.
+- Release: https://github.com/danielexpe/cofre-senhas/releases/tag/v2.0.0
+- Artefatos: AppImage, `SHA256SUMS`, `SHA256SUMS.asc` e `DANIEL-PUBKEY.asc`.
+- Notas: `release/v2.0.0/RELEASE_NOTES.md`.
 - Sem pendências de implementação.
 
 ## Decisões firmadas
