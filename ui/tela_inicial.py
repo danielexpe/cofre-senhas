@@ -9,6 +9,12 @@ from ui.tela_autenticacao import TelaAutenticacao
 from dados.cache import carregar_cache, remover as remover_do_cache, limpar_tudo
 
 
+COR_CARD = "#2d2d2d"
+COR_CARD_HOVER = "#3a3a3a"
+COR_TEXTO_SECUNDARIO = "#9ca3af"
+COR_AZUL_CLARO = "#60a5fa"
+
+
 class TelaInicial:
     def __init__(self, master):
         self.master = master
@@ -21,89 +27,103 @@ class TelaInicial:
             widget.destroy()
 
     def _construir(self):
-        frame = ctk.CTkFrame(self.master, corner_radius=15)
-        frame.pack(expand=True, fill="both", padx=30, pady=30)
+        self._construir_rodape()
+        self._construir_cabecalho()
+        self._construir_secao_recentes()
+        self._construir_lista()
 
-        # Cabeçalho
+    def _construir_rodape(self):
         ctk.CTkLabel(
-            frame,
-            text="🔐 Cofre de Senhas",
-            font=ctk.CTkFont(size=30, weight="bold")
-        ).pack(pady=(25, 5))
-
-        ctk.CTkLabel(
-            frame,
-            text="Gerencie suas credenciais com segurança",
-            font=ctk.CTkFont(size=13),
+            self.master,
+            text="v1.5.0 • Encriptação AES + SHA512 + PBKDF2",
+            font=ctk.CTkFont(size=12),
             text_color="gray"
-        ).pack(pady=(0, 20))
+        ).pack(side="bottom", pady=6)
 
-        # Botões principais
-        botoes = ctk.CTkFrame(frame, fg_color="transparent")
-        botoes.pack(pady=10)
+    def _construir_cabecalho(self):
+        cabecalho = ctk.CTkFrame(self.master, fg_color="transparent")
+        cabecalho.pack(fill="x", padx=16, pady=(14, 6))
 
+        # Botões à direita (na mesma linha do título)
         ctk.CTkButton(
-            botoes,
-            text="➕  Criar Novo Cofre",
-            width=220,
-            height=45,
-            font=ctk.CTkFont(size=14, weight="bold"),
-            command=self._criar_novo
-        ).pack(side="left", padx=8)
-
-        ctk.CTkButton(
-            botoes,
-            text="📂  Abrir Outro Cofre",
-            width=220,
-            height=45,
+            cabecalho,
+            text="📂 Abrir",
+            width=110,
+            height=36,
             font=ctk.CTkFont(size=14, weight="bold"),
             fg_color="#2b6cb0",
             hover_color="#2c5282",
             command=self._abrir_existente
-        ).pack(side="left", padx=8)
-
-        # Cofres recentes
-        recentes = carregar_cache()
-        if recentes:
-            self._construir_recentes(frame, recentes)
-
-        # Rodapé
-        ctk.CTkLabel(
-            frame,
-            text="v1.5.0 • Encriptação AES + SHA512 + PBKDF2",
-            font=ctk.CTkFont(size=11),
-            text_color="gray"
-        ).pack(side="bottom", pady=10)
-
-    def _construir_recentes(self, parent, recentes):
-        cab = ctk.CTkFrame(parent, fg_color="transparent")
-        cab.pack(fill="x", padx=40, pady=(25, 5))
-
-        ctk.CTkLabel(
-            cab,
-            text="🕘 Cofres Recentes",
-            font=ctk.CTkFont(size=16, weight="bold")
-        ).pack(side="left")
+        ).pack(side="right", padx=(8, 0))
 
         ctk.CTkButton(
-            cab,
-            text="🗑️ Limpar Histórico",
-            width=140,
-            height=28,
+            cabecalho,
+            text="➕ Novo",
+            width=100,
+            height=36,
+            font=ctk.CTkFont(size=14, weight="bold"),
+            command=self._criar_novo
+        ).pack(side="right", padx=(8, 0))
+
+        titulos = ctk.CTkFrame(cabecalho, fg_color="transparent")
+        titulos.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkLabel(
+            titulos,
+            text="🔐 Cofre de Senhas",
+            font=ctk.CTkFont(size=24, weight="bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            titulos,
+            text="Gerencie suas credenciais com segurança",
+            font=ctk.CTkFont(size=14),
+            text_color="gray"
+        ).pack(anchor="w")
+
+    def _construir_secao_recentes(self):
+        secao = ctk.CTkFrame(self.master, fg_color="transparent")
+        secao.pack(fill="x", padx=16, pady=(8, 4))
+
+        ctk.CTkButton(
+            secao,
+            text="🗑️ Limpar",
+            width=110,
+            height=26,
             fg_color="transparent",
             border_width=1,
-            border_color="gray",
+            border_color="#5a5a5a",
             text_color="gray",
             hover_color="#3a3a3a",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=12),
             command=self._limpar_historico
         ).pack(side="right")
 
-        # Container scrollável
-        self.lista_scroll = ctk.CTkScrollableFrame(parent, corner_radius=10, height=200)
-        self.lista_scroll.pack(fill="both", expand=True, padx=40, pady=(5, 10))
+        ctk.CTkLabel(
+            secao,
+            text="🕘 Cofres Recentes",
+            font=ctk.CTkFont(size=17, weight="bold")
+        ).pack(side="left")
+
+    def _construir_lista(self):
+        self.lista_scroll = ctk.CTkScrollableFrame(
+            self.master, corner_radius=8, fg_color="transparent"
+        )
+        self.lista_scroll.pack(fill="both", expand=True, padx=16, pady=(2, 8))
 
         self._bind_mousewheel()
+
+        recentes = carregar_cache()
+        if not recentes:
+            ctk.CTkLabel(
+                self.lista_scroll,
+                text="📭 Nenhum cofre recente ainda.\n"
+                     "Clique em '➕ Novo' para criar seu primeiro cofre.",
+                font=ctk.CTkFont(size=14),
+                text_color="gray",
+                justify="center"
+            ).pack(pady=40, padx=20)
+            return
 
         for entrada in recentes:
             self._render_card_recente(self.lista_scroll, entrada)
@@ -143,63 +163,94 @@ class TelaInicial:
             canvas.yview_scroll(1, "units")
 
     def _render_card_recente(self, parent, entrada):
-        card = ctk.CTkFrame(parent, corner_radius=8, fg_color=("#dbdbdb", "#2d2d2d"))
-        card.pack(fill="x", pady=4, padx=4)
+        card = ctk.CTkFrame(parent, corner_radius=8, fg_color=COR_CARD)
+        card.pack(fill="x", pady=3, padx=2)
 
-        card.configure(cursor="hand2")
-
-        info = ctk.CTkFrame(card, fg_color="transparent", cursor="hand2")
-        info.pack(side="left", fill="both", expand=True, padx=12, pady=8)
-
-        nome_arquivo = os.path.basename(entrada["caminho"])
-        ctk.CTkLabel(
-            info,
-            text=f"📁 {nome_arquivo}",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            cursor="hand2"
-        ).pack(anchor="w")
-
-        caminho_exibir = entrada["caminho"]
-        if len(caminho_exibir) > 70:
-            caminho_exibir = "..." + caminho_exibir[-67:]
-
-        ctk.CTkLabel(
-            info,
-            text=caminho_exibir,
-            font=ctk.CTkFont(size=10),
-            text_color="gray",
-            cursor="hand2"
-        ).pack(anchor="w")
-
-        try:
-            dt = datetime.fromisoformat(entrada["ultimo_acesso"])
-            tempo_str = dt.strftime("%d/%m/%Y às %H:%M")
-        except Exception:
-            tempo_str = "—"
-
-        ctk.CTkLabel(
-            info,
-            text=f"🕘 Último acesso: {tempo_str}",
-            font=ctk.CTkFont(size=10),
-            text_color="#60a5fa",
-            cursor="hand2"
-        ).pack(anchor="w")
-
-        callback_abrir = lambda e, ent=entrada: self._abrir_recente(ent)
-        for widget in [card, info] + info.winfo_children():
-            widget.bind("<Button-1>", callback_abrir)
-
-        ctk.CTkButton(
+        remover = ctk.CTkButton(
             card,
             text="✕",
-            width=30,
-            height=30,
+            width=28,
+            height=28,
             fg_color="transparent",
             hover_color="#c0392b",
             text_color="gray",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(size=15, weight="bold"),
             command=lambda ent=entrada: self._remover_recente(ent)
-        ).pack(side="right", padx=8, pady=8)
+        )
+        remover.pack(side="right", padx=(0, 8), pady=6)
+        remover.bind(
+            "<Enter>",
+            lambda e, c=card: c.configure(fg_color=COR_CARD_HOVER)
+        )
+        remover.bind(
+            "<Leave>",
+            lambda e, c=card: c.configure(fg_color=COR_CARD)
+        )
+
+        conteudo = ctk.CTkFrame(card, fg_color="transparent")
+        conteudo.pack(side="left", fill="both", expand=True, padx=12, pady=6)
+
+        linha1 = ctk.CTkFrame(conteudo, fg_color="transparent")
+        linha1.pack(fill="x")
+
+        nome_arquivo = self._truncar_nome(
+            os.path.splitext(os.path.basename(entrada["caminho"]))[0]
+        )
+        nome_lbl = ctk.CTkLabel(
+            linha1,
+            text=f"📁 {nome_arquivo}",
+            font=ctk.CTkFont(size=13, weight="bold")
+        )
+        nome_lbl.pack(side="left")
+
+        acesso_lbl = ctk.CTkLabel(
+            linha1,
+            text=f"Último acesso: {self._formatar_tempo(entrada)}",
+            font=ctk.CTkFont(size=12),
+            text_color=COR_AZUL_CLARO
+        )
+        acesso_lbl.pack(side="right")
+
+        caminho_lbl = ctk.CTkLabel(
+            conteudo,
+            text=self._truncar_caminho(entrada["caminho"]),
+            font=ctk.CTkFont(size=12),
+            text_color=COR_TEXTO_SECUNDARIO,
+            anchor="w"
+        )
+        caminho_lbl.pack(fill="x", anchor="w", pady=(2, 0))
+
+        alvos = [card, conteudo, linha1, nome_lbl, acesso_lbl, caminho_lbl]
+        callback_abrir = lambda e, ent=entrada: self._abrir_recente(ent)
+
+        for widget in alvos:
+            widget.configure(cursor="hand2")
+            widget.bind("<Button-1>", callback_abrir)
+            widget.bind(
+                "<Enter>",
+                lambda e, c=card: c.configure(fg_color=COR_CARD_HOVER)
+            )
+            widget.bind(
+                "<Leave>",
+                lambda e, c=card: c.configure(fg_color=COR_CARD)
+            )
+
+    def _truncar_nome(self, nome):
+        if len(nome) <= 42:
+            return nome
+        return nome[:39] + "..."
+
+    def _truncar_caminho(self, caminho):
+        if len(caminho) <= 90:
+            return caminho
+        return "..." + caminho[-(90 - 3):]
+
+    def _formatar_tempo(self, entrada):
+        try:
+            dt = datetime.fromisoformat(entrada["ultimo_acesso"])
+            return dt.strftime("%d/%m/%Y às %H:%M")
+        except Exception:
+            return "—"
 
     def _abrir_recente(self, entrada):
         caminho = entrada["caminho"]

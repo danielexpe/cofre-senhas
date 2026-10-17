@@ -12,8 +12,8 @@ def main():
 
     app = ctk.CTk()
     app.title("🔐 Cofre de Senhas")
-    app.geometry("900x600")
-    app.minsize(800, 500)
+    app.geometry("700x600")
+    app.minsize(700, 450)
 
     # Suporte alta DPI no Windows
     try:
