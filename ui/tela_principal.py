@@ -7,6 +7,7 @@ from tkinter import filedialog, messagebox
 from seguranca.encriptacao import encriptar_cofre
 from dados.armazenamento import buscar_registros
 from ui.formulario_registro import FormularioRegistro
+from ui.tooltip import Tooltip
 from ui.dialogos_exportacao import (
     DialogoProgresso,
     DialogoRelatorio,
@@ -15,10 +16,11 @@ from ui.dialogos_exportacao import (
 )
 from utils.helpers import copiar_clipboard
 
-
 DEBOUNCE_BUSCA_MS = 250
-COR_CARD_PAR = "#2f2f2f"
-COR_CARD_IMPAR = "#262626"
+COR_CARD = "#2d2d2d"
+COR_CARD_HOVER = "#3a3a3a"
+COR_TEXTO_SECUNDARIO = "#9ca3af"
+COR_AZUL_CLARO = "#60a5fa"
 
 
 class TelaPrincipal:
@@ -40,6 +42,7 @@ class TelaPrincipal:
         self._row_h = None
         self._largura = 0
         self._render_job = None
+        self._contador_job = None
 
         # Registra/atualiza no cache de cofres recentes
         from dados.cache import adicionar_ou_atualizar
@@ -53,71 +56,124 @@ class TelaPrincipal:
             w.destroy()
 
     def _construir(self):
-        topo = ctk.CTkFrame(self.master, corner_radius=0, height=70)
-        topo.pack(fill="x")
+        self._construir_cabecalho()
+        self._construir_busca()
+        self._construir_lista()
 
-        ctk.CTkLabel(
-            topo,
-            text=f"🔐 {os.path.basename(self.caminho)}",
-            font=ctk.CTkFont(size=18, weight="bold")
-        ).pack(side="left", padx=20, pady=15)
-
-        # Ações de exportação/importação (agrupadas à esquerda, junto do título)
-        self.btn_export_json = ctk.CTkButton(
-            topo, text="⬆️ Exportar JSON", width=140, height=32,
-            font=ctk.CTkFont(size=12), command=self._exportar_json
-        )
-        self.btn_export_json.pack(side="left", padx=4, pady=15)
-
-        self.btn_import_json = ctk.CTkButton(
-            topo, text="⬇️ Importar JSON", width=140, height=32,
-            font=ctk.CTkFont(size=12), command=self._importar_json
-        )
-        self.btn_import_json.pack(side="left", padx=4, pady=15)
-
-        self.btn_export_pdf = ctk.CTkButton(
-            topo, text="📄 Exportar PDF", width=140, height=32,
-            font=ctk.CTkFont(size=12), command=self._exportar_pdf
-        )
-        self.btn_export_pdf.pack(side="left", padx=4, pady=15)
+    def _construir_cabecalho(self):
+        cabecalho = ctk.CTkFrame(self.master, fg_color="transparent")
+        cabecalho.pack(fill="x", padx=16, pady=(14, 6))
 
         self.btn_sair = ctk.CTkButton(
-            topo,
+            cabecalho,
             text="🚪 Sair",
             width=80,
+            height=34,
+            font=ctk.CTkFont(size=13),
             fg_color="#c0392b",
             hover_color="#922b21",
             command=self._sair
         )
-        self.btn_sair.pack(side="right", padx=10)
+        self.btn_sair.pack(side="right", padx=(8, 0))
 
         self.btn_novo = ctk.CTkButton(
-            topo,
-            text="➕ Novo Registro",
-            width=140,
+            cabecalho,
+            text="➕ Novo",
+            width=100,
+            height=34,
+            font=ctk.CTkFont(size=13, weight="bold"),
             command=self._novo_registro
         )
-        self.btn_novo.pack(side="right", padx=5)
+        self.btn_novo.pack(side="right", padx=(8, 0))
+
+        self.btn_export_pdf = ctk.CTkButton(
+            cabecalho,
+            text="📄",
+            width=40,
+            height=34,
+            font=ctk.CTkFont(size=15),
+            command=self._exportar_pdf
+        )
+        self.btn_export_pdf.pack(side="right", padx=(8, 0))
+
+        self.btn_import_json = ctk.CTkButton(
+            cabecalho,
+            text="⬇️",
+            width=40,
+            height=34,
+            font=ctk.CTkFont(size=15),
+            command=self._importar_json
+        )
+        self.btn_import_json.pack(side="right", padx=(8, 0))
+
+        self.btn_export_json = ctk.CTkButton(
+            cabecalho,
+            text="⬆️",
+            width=40,
+            height=34,
+            font=ctk.CTkFont(size=15),
+            command=self._exportar_json
+        )
+        self.btn_export_json.pack(side="right", padx=(8, 0))
+
+        titulos = ctk.CTkFrame(cabecalho, fg_color="transparent")
+        titulos.pack(side="left", fill="x", expand=True)
+
+        nome_vault = self._truncar(
+            os.path.splitext(os.path.basename(self.caminho))[0], 24
+        )
+        ctk.CTkLabel(
+            titulos,
+            text=f"🔐 {nome_vault}",
+            font=ctk.CTkFont(size=24, weight="bold")
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            titulos,
+            text=self._truncar(self.caminho, 50),
+            font=ctk.CTkFont(size=12),
+            text_color="gray"
+        ).pack(anchor="w")
 
         self._botoes_operacao = [
             self.btn_export_json, self.btn_import_json,
             self.btn_export_pdf, self.btn_novo,
         ]
 
-        busca_frame = ctk.CTkFrame(self.master, corner_radius=0)
-        busca_frame.pack(fill="x", padx=15, pady=(10, 5))
+        Tooltip(self.btn_export_json, "Exportar JSON")
+        Tooltip(self.btn_import_json, "Importar JSON")
+        Tooltip(self.btn_export_pdf, "Exportar PDF")
 
-        ctk.CTkLabel(busca_frame, text="🔍").pack(side="left", padx=(10, 5))
+    def _construir_busca(self):
+        busca_frame = ctk.CTkFrame(self.master, fg_color="transparent")
+        busca_frame.pack(fill="x", padx=16, pady=(4, 4))
+
+        ctk.CTkLabel(busca_frame, text="🔍").pack(side="left", padx=(0, 6))
 
         self.busca_entry = ctk.CTkEntry(
             busca_frame,
             placeholder_text="Buscar por nome, login ou URL..."
         )
-        self.busca_entry.pack(side="left", fill="x", expand=True, padx=5, pady=8)
+        self.busca_entry.pack(side="left", fill="x", expand=True, pady=4)
         self.busca_entry.bind("<KeyRelease>", lambda e: self._renderizar_lista(debounce=True))
 
-        self._container = ctk.CTkFrame(self.master, corner_radius=10, fg_color="transparent")
-        self._container.pack(fill="both", expand=True, padx=2, pady=2)
+    def _construir_lista(self):
+        secao = ctk.CTkFrame(self.master, fg_color="transparent")
+        secao.pack(fill="x", padx=16, pady=(8, 4))
+
+        self.contador = ctk.CTkLabel(
+            secao, text="", font=ctk.CTkFont(size=12), text_color="gray"
+        )
+        self.contador.pack(side="right")
+
+        ctk.CTkLabel(
+            secao,
+            text="🔑 Registros",
+            font=ctk.CTkFont(size=17, weight="bold")
+        ).pack(side="left")
+
+        self._container = ctk.CTkFrame(self.master, corner_radius=8, fg_color="transparent")
+        self._container.pack(fill="both", expand=True, padx=16, pady=(2, 10))
 
         fundo = self.master.cget("fg_color")
         if isinstance(fundo, (tuple, list)):
@@ -136,18 +192,10 @@ class TelaPrincipal:
 
         self._vazio_label = ctk.CTkLabel(
             self.canvas,
-            text="📭 Nenhum registro encontrado.\nClique em '➕ Novo Registro' para começar.",
+            text="📭 Nenhum registro encontrado.\nClique em '➕ Novo' para começar.",
             font=ctk.CTkFont(size=14),
             text_color="gray"
         )
-
-        self.status = ctk.CTkLabel(
-            self.master,
-            text="",
-            font=ctk.CTkFont(size=11),
-            text_color="gray"
-        )
-        self.status.pack(side="bottom", pady=2)
 
         self._renderizar_lista()
 
@@ -215,9 +263,8 @@ class TelaPrincipal:
         termo = self.busca_entry.get() if hasattr(self, "busca_entry") else ""
         self._filtrados = buscar_registros(self.registros, termo)
 
-        self.status.configure(
-            text=f"Total: {len(self.registros)} registro(s) | Exibindo: {len(self._filtrados)}"
-        )
+        self._atualizar_contador()
+        self._atualizar_scrollbar()
 
         self._garantir_altura_card()
         self.canvas.yview_moveto(0)
@@ -231,6 +278,38 @@ class TelaPrincipal:
 
         self._vazio_label.place_forget()
         self._atualizar_janela()
+
+    def _truncar(self, texto, max_len):
+        if not texto:
+            return texto
+        if len(texto) <= max_len:
+            return texto
+        return texto[: max_len - 3] + "..."
+
+    def _texto_contador(self):
+        total = len(self.registros)
+        exibindo = len(self._filtrados)
+        if total == exibindo:
+            return f"{total} registro(s)"
+        return f"Exibindo {exibindo} de {total}"
+
+    def _atualizar_contador(self):
+        self.contador.configure(text=self._texto_contador())
+
+    def _feedback_contador(self, texto):
+        self._cancelar_after("_contador_job")
+        self.contador.configure(text=texto)
+        self._contador_job = self.master.after(
+            2500, lambda: self.contador.configure(text=self._texto_contador())
+        )
+
+    def _atualizar_scrollbar(self):
+        if self.scrollbar is None:
+            return
+        if len(self._filtrados) > 5:
+            self.scrollbar.pack(side="right", fill="y")
+        else:
+            self.scrollbar.pack_forget()
 
     def _garantir_altura_card(self):
         if self._row_h is not None:
@@ -264,7 +343,7 @@ class TelaPrincipal:
         for posicao, indice in enumerate(range(primeiro, ultimo)):
             card = self._obter_card(posicao)
             y = indice * self._row_h - topo
-            self._preencher_card(card, self._filtrados[indice], indice, y, largura)
+            self._preencher_card(card, self._filtrados[indice], y, largura)
 
     def _obter_card(self, posicao):
         while len(self._pool) <= posicao:
@@ -274,40 +353,58 @@ class TelaPrincipal:
     def _criar_card(self):
         # Wrapper nativo: aceita width/height no place (o CTkFrame não aceita).
         wrapper = tk.Frame(self.canvas, bd=0, highlightthickness=0, bg=self._fundo)
-        card = ctk.CTkFrame(wrapper, corner_radius=10, fg_color=COR_CARD_PAR)
-        card.pack(fill="both", expand=True)
-
-        info = ctk.CTkFrame(card, fg_color="transparent")
-        info.pack(side="left", fill="both", expand=True, padx=10, pady=8)
-
-        nome = ctk.CTkLabel(
-            info, text="", font=ctk.CTkFont(size=15, weight="bold"), anchor="w"
-        )
-        nome.pack(anchor="w", fill="x")
-
-        login = ctk.CTkLabel(
-            info, text="", font=ctk.CTkFont(size=12),
-            text_color="#9ca3af", anchor="w"
-        )
-        login.pack(anchor="w", pady=2, fill="x")
-
-        url = ctk.CTkLabel(
-            info, text="", font=ctk.CTkFont(size=11),
-            text_color="#60a5fa", anchor="w"
-        )
-        url.pack(anchor="w", fill="x")
+        card = ctk.CTkFrame(wrapper, corner_radius=8, fg_color=COR_CARD)
+        card.pack(fill="both", expand=True, padx=2)
 
         botoes = ctk.CTkFrame(card, fg_color="transparent")
-        botoes.pack(side="right", padx=2, pady=2)
+        botoes.pack(side="right", padx=(0, 8), pady=6)
 
-        copiar = ctk.CTkButton(botoes, text="📋 Copiar", width=80, fg_color="#16a085")
+        copiar = ctk.CTkButton(botoes, text="📋", width=32, height=28, fg_color="#16a085")
         copiar.pack(side="left", padx=2)
+        Tooltip(copiar, "Copiar senha")
 
-        editar = ctk.CTkButton(botoes, text="✏️ Editar", width=80, fg_color="#d68910")
+        editar = ctk.CTkButton(botoes, text="✏️", width=32, height=28, fg_color="#d68910")
         editar.pack(side="left", padx=2)
+        Tooltip(editar, "Editar")
 
-        excluir = ctk.CTkButton(botoes, text="🗑️ Excluir", width=80, fg_color="#c0392b")
+        excluir = ctk.CTkButton(botoes, text="🗑️", width=32, height=28, fg_color="#c0392b")
         excluir.pack(side="left", padx=2)
+        Tooltip(excluir, "Excluir")
+
+        info = ctk.CTkFrame(card, fg_color="transparent")
+        info.pack(side="left", fill="both", expand=True, padx=12, pady=4)
+
+        linha1 = ctk.CTkFrame(info, fg_color="transparent")
+        linha1.pack(fill="x")
+
+        nome = ctk.CTkLabel(
+            linha1, text="", font=ctk.CTkFont(size=14, weight="bold"), anchor="w"
+        )
+        nome.pack(side="left")
+
+        login = ctk.CTkLabel(
+            linha1, text="", font=ctk.CTkFont(size=12),
+            text_color=COR_AZUL_CLARO, anchor="e"
+        )
+        login.pack(side="right")
+
+        url = ctk.CTkLabel(
+            info, text="", font=ctk.CTkFont(size=12),
+            text_color=COR_TEXTO_SECUNDARIO, anchor="w"
+        )
+        url.pack(fill="x", anchor="w", pady=(2, 0))
+
+        alvos = [card, info, linha1, nome, login, url]
+        for w in alvos:
+            w.configure(cursor="hand2")
+            w.bind(
+                "<Enter>",
+                lambda e, c=card: c.configure(fg_color=COR_CARD_HOVER)
+            )
+            w.bind(
+                "<Leave>",
+                lambda e, c=card: c.configure(fg_color=COR_CARD)
+            )
 
         return {
             "frame": wrapper,
@@ -320,13 +417,17 @@ class TelaPrincipal:
             "excluir": excluir,
         }
 
-    def _preencher_card(self, card, reg, indice, y, largura):
-        card["card"].configure(
-            fg_color=COR_CARD_PAR if indice % 2 == 0 else COR_CARD_IMPAR
-        )
-        card["nome"].configure(text=f"🏷️  {reg['nome']}")
-        card["login"].configure(text=f"👤  {reg['login']}")
-        card["url"].configure(text=f"🔗  {reg['url']}" if reg.get("url") else "")
+    def _preencher_card(self, card, reg, y, largura):
+        card["card"].configure(fg_color=COR_CARD)
+        card["nome"].configure(text=f"🏷️  {self._truncar(reg['nome'], 40)}")
+        card["login"].configure(text=f"👤  {self._truncar(reg['login'], 32)}")
+
+        if reg.get("url"):
+            card["url"].configure(text=f"🔗  {self._truncar(reg['url'], 80)}")
+            card["url"].pack(fill="x", anchor="w", pady=(2, 0))
+        else:
+            card["url"].pack_forget()
+
         card["copiar"].configure(command=lambda r=reg: self._copiar_senha(r))
         card["editar"].configure(command=lambda r=reg: self._editar(r))
         card["excluir"].configure(command=lambda r=reg: self._deletar(r))
@@ -338,9 +439,7 @@ class TelaPrincipal:
 
     def _copiar_senha(self, reg):
         copiar_clipboard(self.master, reg["senha"])
-        self.status.configure(
-            text=f"✓ Senha de '{reg['nome']}' copiada para área de transferência."
-        )
+        self._feedback_contador(f"✓ Senha de '{reg['nome']}' copiada.")
 
     def _novo_registro(self):
         FormularioRegistro(self.master, self._adicionar_callback)
