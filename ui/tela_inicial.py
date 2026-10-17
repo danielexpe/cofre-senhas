@@ -35,7 +35,7 @@ class TelaInicial:
     def _construir_rodape(self):
         ctk.CTkLabel(
             self.master,
-            text="v1.5.0 • Encriptação AES + SHA512 + PBKDF2",
+            text="v1.6.0 • Encriptação AES + SHA512 + PBKDF2",
             font=ctk.CTkFont(size=12),
             text_color="gray"
         ).pack(side="bottom", pady=6)

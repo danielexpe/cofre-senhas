@@ -1,6 +1,6 @@
 # AGENTS.md — Guia de Desenvolvimento
 
-Guia de referência para dar continuidade ao projeto **Cofre de Senhas** (v1.5.0). Leia antes de mexer no código.
+Guia de referência para dar continuidade ao projeto **Cofre de Senhas** (v1.6.0). Leia antes de mexer no código.
 
 ## Visão geral
 

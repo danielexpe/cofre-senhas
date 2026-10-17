@@ -178,9 +178,11 @@ pyinstaller --name CofreSenhas --onefile --windowed \`
             --collect-all customtkinter \`
             main.py
 ```
-OU
+OU, geração de .exe no Linux com compilação cross
 ```bash
-pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --add-data "assets;assets" --collect-all customtkinter main.py
+source .venv/bin/activate
+pyinstaller --name CofreSenhas --onefile --windowed --icon=assets/icone.ico --add-data "assets:assets" --collect-all customtkinter main.py
+
 ```
 
 ### .app (macOS)
