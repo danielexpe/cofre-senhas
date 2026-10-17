@@ -17,6 +17,7 @@ from ui.dialogos_exportacao import (
 from utils.helpers import copiar_clipboard
 
 DEBOUNCE_BUSCA_MS = 250
+ESPACO_CARD = 8
 COR_CARD = "#2d2d2d"
 COR_CARD_HOVER = "#3a3a3a"
 COR_TEXTO_SECUNDARIO = "#9ca3af"
@@ -316,7 +317,7 @@ class TelaPrincipal:
             return
         card = self._criar_card()
         card["frame"].update_idletasks()
-        self._row_h = max(card["frame"].winfo_reqheight() + 4, 44)
+        self._row_h = max(card["frame"].winfo_reqheight(), 44)
         self._pool.append(card)
 
     def _atualizar_scrollregion(self):
@@ -354,7 +355,7 @@ class TelaPrincipal:
         # Wrapper nativo: aceita width/height no place (o CTkFrame não aceita).
         wrapper = tk.Frame(self.canvas, bd=0, highlightthickness=0, bg=self._fundo)
         card = ctk.CTkFrame(wrapper, corner_radius=8, fg_color=COR_CARD)
-        card.pack(fill="both", expand=True, padx=2)
+        card.pack(fill="both", expand=True, padx=2, pady=ESPACO_CARD // 2)
 
         botoes = ctk.CTkFrame(card, fg_color="transparent")
         botoes.pack(side="right", padx=(0, 8), pady=6)
