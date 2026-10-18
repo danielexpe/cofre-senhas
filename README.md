@@ -53,7 +53,7 @@ O **Cofre de Senhas** é uma aplicação desktop para armazenamento seguro de cr
 - Última versão: https://github.com/danielexpe/cofre-senhas/releases/latest
 
 Artefatos disponíveis no Release:
-- AppImage (ex.: `CofreDeSenhas-1.1-x86_64.AppImage`)
+- AppImage (ex.: `CofreDeSenhas-2.0.0-x86_64.AppImage`)
 - `SHA256SUMS`
 - `SHA256SUMS.asc`
 - `DANIEL-PUBKEY.asc` (chave pública do autor)
@@ -65,7 +65,7 @@ Fingerprint GPG do autor: `D7E1 90A8 26A9 82E5 01B7 469F F7E9 56C8 37AB D08F`
 
 ```bash
 # 0) Ajuste o nome do arquivo que você baixou
-APP="CofreDeSenhas-1.1-x86_64.AppImage"
+APP="CofreDeSenhas-2.0.0-x86_64.AppImage"
 
 # (Opcional) Baixe direto os arquivos de verificação da última release
 # wget https://github.com/danielexpe/cofre-senhas/releases/latest/download/DANIEL-PUBKEY.asc
@@ -90,8 +90,8 @@ sha256sum "$APP"
 Baixe o AppImage da última release e execute:
 
 ```bash
-chmod +x CofreDeSenhas-1.1-x86_64.AppImage
-./CofreDeSenhas-1.1-x86_64.AppImage
+chmod +x CofreDeSenhas-2.0.0-x86_64.AppImage
+./CofreDeSenhas-2.0.0-x86_64.AppImage
 ```
 
 Ou simplesmente **dois cliques** no arquivo. Sem instalação, sem dependências. ✨
@@ -277,7 +277,3 @@ Desenvolvido por **Daniel** 🚀
 Feito com ☕ e 🐍 em Porto Alegre, RS 🇧🇷
 
 </div>
-EOF
-
-echo "✅ README.md criado com sucesso!"
-ls -lh README.md
