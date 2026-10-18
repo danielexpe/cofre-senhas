@@ -1,4 +1,5 @@
 import os
+import webbrowser
 from datetime import datetime
 
 import customtkinter as ctk
@@ -13,6 +14,8 @@ COR_CARD = "#2d2d2d"
 COR_CARD_HOVER = "#3a3a3a"
 COR_TEXTO_SECUNDARIO = "#9ca3af"
 COR_AZUL_CLARO = "#60a5fa"
+COR_AZUL_CLARO_HOVER = "#93c5fd"
+URL_GITHUB = "https://github.com/danielexpe/cofre-senhas"
 
 
 class TelaInicial:
@@ -33,12 +36,30 @@ class TelaInicial:
         self._construir_lista()
 
     def _construir_rodape(self):
+        rodape = ctk.CTkFrame(self.master, fg_color="transparent")
+        rodape.pack(side="bottom", pady=6)
+
         ctk.CTkLabel(
-            self.master,
-            text="v2.0.0 • Encriptação AES + SHA512 + PBKDF2",
+            rodape,
+            text="v2.0.0 • Encriptação AES + SHA512 + PBKDF2 •",
             font=ctk.CTkFont(size=12),
             text_color="gray"
-        ).pack(side="bottom", pady=6)
+        ).pack(side="left")
+
+        link = ctk.CTkLabel(
+            rodape,
+            text="GitHub",
+            font=ctk.CTkFont(size=12, underline=True),
+            text_color=COR_AZUL_CLARO,
+            cursor="hand2"
+        )
+        link.pack(side="left", padx=(4, 0))
+        link.bind("<Button-1>", self._abrir_github)
+        link.bind("<Enter>", lambda _: link.configure(text_color=COR_AZUL_CLARO_HOVER))
+        link.bind("<Leave>", lambda _: link.configure(text_color=COR_AZUL_CLARO))
+
+    def _abrir_github(self, _event=None):
+        webbrowser.open(URL_GITHUB)
 
     def _construir_cabecalho(self):
         cabecalho = ctk.CTkFrame(self.master, fg_color="transparent")
